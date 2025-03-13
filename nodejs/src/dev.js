@@ -1,4 +1,5 @@
 import { createServer } from 'http';
+import {getWebsiteBundle} from "../esbuild-website.js";
 
 globalThis.catServerFactory = (handle) => {
     let port = 0;
@@ -18,6 +19,8 @@ globalThis.catServerFactory = (handle) => {
 globalThis.catDartServerPort = () => {
     return 0;
 };
+
+eval(await getWebsiteBundle());
 
 import { start } from './index.js';
 

@@ -1,4 +1,18 @@
 export default {
+    ali: {
+        token: 'token',
+        token280: 'token280',
+    },
+    quark: {
+        cookie: 'cookie'
+    },
+    uc: {
+        cookie: 'cookie',
+        token: 'token'
+    },
+    y115: {
+        cookie: 'y115'
+    },
     kunyu77: {
         testcfg: {
             bbbb: 'aaaaa',
