@@ -32,12 +32,12 @@ const shareTokenCache = {};
 const saveDirName = 'CatVodOpen';
 let saveDirId = null;
 
-export async function initQuark(db, cfg) {
-    if (cookie) return;
-    localDb = db;
+export async function initQuark(inReq) {
+    localDb = inReq.server.db;
+    const cfg = inReq.server.config.quark
     cookie = cfg.cookie;
     ckey = CryptoJS.enc.Hex.stringify(CryptoJS.MD5(cfg.cookie)).toString();
-    const localCfg = await db.getObjectDefault(`/quark`, {});
+    const localCfg = await localDb.getObjectDefault(`/quark`, {});
     if (localCfg[ckey]) {
         cookie = localCfg[ckey];
     }
@@ -297,6 +297,7 @@ const quarkTranscodingCache = {};
 const quarkDownloadingCache = {};
 
 export async function proxy(inReq, outResp) {
+    await initQuark(inReq)
     const site = inReq.params.site;
     const what = inReq.params.what;
     const shareId = inReq.params.shareId;
@@ -339,6 +340,7 @@ export async function proxy(inReq, outResp) {
 }
 
 export async function play(inReq, outResp) {
+    await initQuark(inReq)
     const flag = inReq.body.flag;
     const id = inReq.body.id;
     const ids = id.split('*');
