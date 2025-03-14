@@ -4,14 +4,14 @@ export default {
         token280: 'token280',
     },
     quark: {
-        cookie: 'cookie'
+        cookie: ''
     },
     uc: {
-        cookie: 'cookie',
+        cookie: '',
         token: 'token'
     },
     y115: {
-        cookie: 'y115'
+        cookie: ''
     },
     kunyu77: {
         testcfg: {
