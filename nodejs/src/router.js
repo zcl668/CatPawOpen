@@ -1,14 +1,8 @@
-import kunyu77 from './spider/video/kunyu77.js';
-import kkys from './spider/video/kkys.js';
-import push from './spider/video/push.js';
-import alist from './spider/pan/alist.js';
-import _13bqg from './spider/book/13bqg.js';
-import copymanga from './spider/book/copymanga.js';
-import ffm3u8 from './spider/video/ffm3u8.js';
 import duoduo from "./spider/video/duoduo.js";
 import baseset from "./spider/video/baseset.js";
+import mogg from "./spider/video/mogg.js";
 
-const spiders = [duoduo, baseset];
+const spiders = [duoduo, mogg, baseset];
 const spiderPrefix = '/spider';
 
 /**
