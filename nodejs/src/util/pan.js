@@ -8,9 +8,6 @@ export { isEmpty };
 export const ua = IOS_UA;
 
 export async function init(inReq, _outResp) {
-    await Ali.initAli(inReq.server.db, inReq.server.config.ali);
-    await Quark.initQuark(inReq);
-    await UC.initUC(inReq);
     return {};
 }
 

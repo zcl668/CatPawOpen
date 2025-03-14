@@ -1,8 +1,9 @@
 import duoduo from "./spider/video/duoduo.js";
 import baseset from "./spider/video/baseset.js";
 import mogg from "./spider/video/mogg.js";
+import leijing from "./spider/video/leijing.js";
 
-const spiders = [duoduo, mogg, baseset];
+const spiders = [duoduo, mogg, leijing, baseset];
 const spiderPrefix = '/spider';
 
 /**
