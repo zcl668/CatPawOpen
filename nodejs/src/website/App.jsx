@@ -34,45 +34,19 @@ function QrcodeImage({src}) {
   )
 }
 
-function App() {
-  const [quarkCookie, setQuarkCookie] = React.useState('');
-  const [ucCookie, setUcCookie] = React.useState('');
-  const [ucToken, setUcToken] = React.useState('');
+function QrcodeCard({qrcodeUrl, cacheUrl}) {
+  const [data, setData] = React.useState('');
 
-  const generateQuarkCookie = async () => {
-    const cookie = await http.post('/quark/cookie')
-    setQuarkCookie(cookie)
+  const generateData = async () => {
+    const data = await http.post(cacheUrl)
+    setData(data)
   }
 
-  const storeQuarkCookie = async () => {
-    await http.put('/quark/cookie', {
-      cookie: quarkCookie,
+  const storeData = async () => {
+    await http.put(cacheUrl, {
+      cookie: data,
     })
-    message.success('写入成功')
-  }
-
-  const generateUcCookie = async () => {
-    const cookie = await http.post('/uc/cookie')
-    setUcCookie(cookie)
-  }
-
-  const storeUcCookie = async () => {
-    await http.put('/uc/cookie', {
-      cookie: ucCookie,
-    })
-    message.success('写入成功')
-  }
-
-  const generateUcToken = async () => {
-    const token = await http.post('/uc-tv/token')
-    setUcToken(token)
-  }
-
-  const storeUcToken = async () => {
-    await http.put('/uc-tv/token', {
-      cookie: ucToken,
-    })
-    message.success('写入成功')
+    message.success('入库成功')
   }
 
   const copyText = (text) => {
@@ -81,64 +55,56 @@ function App() {
   }
 
   useEffect(() => {
-    http.get('/quark/cookie')
+    http.get(cacheUrl)
       .then(data => {
-        setQuarkCookie(data);
+        setData(data);
       })
-    http.get('/uc/cookie')
-      .then(data => {
-        setUcCookie(data);
-      })
-    http.get('/uc-tv/token')
-      .then(data => {
-        setUcToken(data);
-      })
-  }, []);
+  }, [])
 
+  return (
+    <div className={'qrcodeCard'}>
+      <QrcodeImage src={qrcodeUrl}/>
+      <Divider>
+        <Button onClick={generateData}>扫码后点我</Button>
+      </Divider>
+      <Input.TextArea value={data} rows={4}/>
+      <div className={'btns'}>
+        <Button onClick={() => copyText(data)} disabled={!data} color="cyan" variant="solid"
+                style={{marginRight: 24}} size={'large'}>复制</Button>
+        <Button onClick={storeData} disabled={!data} type={'primary'} size={'large'}>入库</Button>
+      </div>
+    </div>
+  )
+}
+
+function App() {
   return (
     <div className={'container'}>
       <Card style={{ minHeight: 500 }}>
-        <Tabs defaultActiveKey={'quark'} onChange={console.log}>
+        <Tabs defaultActiveKey={'quark'}>
           <TabPane tab="夸克" key="quark">
-            <div className={'qrcodeCard'}>
-              <QrcodeImage src="/website/quark/qrcode"/>
-              <Divider>
-                <Button onClick={generateQuarkCookie}>扫码后点我</Button>
-              </Divider>
-              <Input.TextArea value={quarkCookie} readOnly={true} rows={4}/>
-              <div className={'btns'}>
-                <Button onClick={() => copyText(quarkCookie)} disabled={!quarkCookie} color="cyan" variant="solid" style={{marginRight: 24}} size={'large'}>复制</Button>
-                <Button onClick={storeQuarkCookie} disabled={!quarkCookie} type={'primary'} size={'large'}>入库</Button>
-              </div>
-            </div>
+            <QrcodeCard
+              qrcodeUrl="/website/quark/qrcode"
+              cacheUrl="/quark/cookie"
+            />
           </TabPane>
           <TabPane tab="UC Cookie" key="uc-cookie">
-            <div className={'qrcodeCard'}>
-              <QrcodeImage src="/website/uc/qrcode"/>
-              <Divider>
-                <Button onClick={generateUcCookie}>扫码后点我</Button>
-              </Divider>
-              <Input.TextArea value={ucCookie} readOnly={true} rows={4}/>
-              <div className={'btns'}>
-                <Button onClick={() => copyText(ucCookie)} disabled={!ucCookie} color="cyan" variant="solid"
-                        style={{marginRight: 24}} size={'large'}>复制</Button>
-                <Button onClick={storeUcCookie} disabled={!ucCookie} type={'primary'} size={'large'}>入库</Button>
-              </div>
-            </div>
+            <QrcodeCard
+              qrcodeUrl="/website/uc/qrcode"
+              cacheUrl="/uc/cookie"
+            />
           </TabPane>
           <TabPane tab="UC token" key="uc-token">
-            <div className={'qrcodeCard'}>
-              <QrcodeImage src="/website/uc-tv/qrcode"/>
-              <Divider>
-                <Button onClick={generateUcToken}>扫码后点我</Button>
-              </Divider>
-              <Input.TextArea value={ucToken} readOnly={true} rows={4}/>
-              <div className={'btns'}>
-                <Button onClick={() => copyText(ucToken)} disabled={!ucToken} color="cyan" variant="solid"
-                        style={{marginRight: 24}} size={'large'}>复制</Button>
-                <Button onClick={storeUcToken} disabled={!ucToken} type={'primary'} size={'large'}>入库</Button>
-              </div>
-            </div>
+            <QrcodeCard
+              qrcodeUrl="/website/uc-tv/qrcode"
+              cacheUrl="/uc-tv/token"
+            />
+          </TabPane>
+          <TabPane tab="115" key="115">
+            <QrcodeCard
+              qrcodeUrl="/website/115/qrcode"
+              cacheUrl="/115/cookie"
+            />
           </TabPane>
           <TabPane tab="天翼" key="tianyi">
             <Form>

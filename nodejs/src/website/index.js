@@ -1,6 +1,7 @@
 import quark from "./quark.js";
 import uc from "./uc.js";
 import ucTv from "./uc-tv.js";
+import y115 from "./115.js";
 
 export default async function website(fastify) {
   fastify.get('/', (req, res) => {
@@ -22,4 +23,5 @@ export default async function website(fastify) {
   fastify.register(quark, {prefix: '/quark'})
   fastify.register(uc, {prefix: '/uc'})
   fastify.register(ucTv, {prefix: '/uc-tv'})
+  fastify.register(y115, {prefix: '/115'})
 }
