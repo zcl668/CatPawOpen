@@ -7,4 +7,6 @@
 - `src/index.js`：注册前端项目的路由，并监听0.0.0.0，允许局域网访问配置页面
 - `src/website`：前端项目的实现
 
-更多细节请查看commit变更内容
+更多细节请查看[commit变更内容](https://github.com/gendago/CatPawOpen/commit/18074f94e79d4c94ff5b9c88760ccba9af7e6fb9)
+
+为了验证可行性，本仓库内集成了部分站源，几乎全部抄袭自其他仓库，感谢：道长、真心、奥秘
