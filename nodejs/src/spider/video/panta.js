@@ -1,9 +1,9 @@
 import req from '../../util/req.js';
 import {init, proxy, play} from '../../util/pan.js';
 import {jsoup} from "../../util/htmlParser.js";
-import {Cloud} from "../../util/cloud.js";
 import axios from "axios";
 import {PC_UA} from "../../util/misc.js";
+import {Yun} from "../../util/yun.js";
 
 async function getHtml(config) {
   try {
@@ -30,22 +30,25 @@ async function request(reqUrl) {
   return resp.data;
 }
 
-const url = 'https://www.leijing.xyz'
+const url = 'https://www.91panta.cn'
 
 const pq = (html) => {
   const jsp = new jsoup();
   return jsp.pq(html);
 }
 
+const classes = [
+  {type_id: '39765285016165', type_name: '电影',},
+  {type_id: '39765284616164', type_name: '电视剧',},
+  {type_id: '39724839640293', type_name: '综艺',},
+  {type_id: '39724838540291', type_name: " 动漫"},
+  {type_id: '44732560408431', type_name: '短剧',},
+  {type_id: '39956600861068', type_name: '纪录片',},
+]
+
+const tags = classes.map(item => item.type_name)
+
 async function home(_inReq, _outResp) {
-  let classes = [
-    {type_id: '42204681950354', type_name: '电影',},
-    {type_id: '42204684250355', type_name: '剧集',},
-    {type_id: '42212287587456', type_name: '影视原盘',},
-    {type_id: '42204697150356', type_name: '记录',},
-    {type_id: '42204792950357', type_name: '动画动漫',},
-    {type_id: '42210356650363', type_name: " 综艺"}
-  ];
   let filterObj = {};
   return ({
     class: classes,
@@ -63,10 +66,11 @@ async function category(inReq, _outResp) {
   let videos = []
   $('.topicList .topicItem').each((index, item) => {
     const a = $(item).find('h2 a:first')[0];
+    const imgSrc = $(item).find('.tm-m-photos-thumb li:first')[0]?.attribs['data-src'];
     videos.push({
-      "vod_name": a.children[0].data,
+      "vod_name": a.children[0].data.split(' ')[0],
       "vod_id": a.attribs.href,
-      "vod_pic": 'https://www.leijing.xyz/favicon.ico'
+      "vod_pic": imgSrc ? `https://www.91panta.cn/${imgSrc}` : 'https://www.91panta.cn/favicon.ico',
     })
   })
   const pageInfo = $('.topicPage .pg')[0]
@@ -90,29 +94,29 @@ async function detail(inReq, _outResp) {
     "vod_content": $('div.topicContent p:nth-child(1)').text().replace(/\s+/g, ''),
   }
   let content_html = $('.topicContent').html()
-  let link = content_html.match(/<a\s+(?:[^>]*?\s+)?href=["'](https:\/\/cloud\.189\.cn\/[^"']*)["'][^>]*>/gi);
+  let link = content_html.match(/<a\s+(?:[^>]*?\s+)?href=["'](https:\/\/caiyun\.139\.com\/[^"']*)["'][^>]*>/gi);
   if (!link || link.length === 0) {
     // 如果 a 标签匹配不到，尝试匹配 span 标签中的文本内容
-    link = content_html.match(/<span\s+style="color:\s*#0070C0;\s*">https:\/\/cloud\.189\.cn\/[^<]*<\/span>/gi);
+    link = content_html.match(/<span\s+style="color:\s*#0070C0;\s*">https:\/\/caiyun\.139\.com\/[^<]*<\/span>/gi);
     if (link && link.length > 0) {
       // 提取 span 标签中的 URL
-      link = link[0].match(/https:\/\/cloud\.189\.cn\/[^<]*/)[0];
+      link = link[0].match(/https:\/\/caiyun\.139\.com\/[^<]*/)[0];
     } else {
-      link = content_html.match(/https:\/\/cloud\.189\.cn\/[^<]*/)[0]
+      link = content_html.match(/https:\/\/caiyun\.139\.com\/[^<]*/)[0]
     }
   } else {
     // 提取 a 标签中的 URL
-    link = link[0].match(/https:\/\/cloud\.189\.cn\/[^"']*/)[0];
+    link = link[0].match(/https:\/\/caiyun\.139\.com\/[^"']*/)[0];
   }
   let playform = []
   let playurls = []
   let playPans = [];
-  if (/cloud.189.cn/.test(link)) {
+  if (/caiyun.139.com/.test(link)) {
     playPans.push(link);
-    let data = await Cloud.getShareData(link)
+    let data = await Yun.getShareData(link)
     Object.keys(data).forEach(it => {
-      playform.push('天翼网盘-' + it)
-      const urls = data[it].map(item => item.name + "$" + [item.fileId, item.shareId].join('*')).join('#');
+      playform.push('移动网盘-' + it)
+      const urls = data[it].map(item => item.name + "$" + [item.contentId, item.linkID].join('*')).join('#');
       playurls.push(urls);
     })
   }
@@ -133,13 +137,14 @@ async function search(inReq, _outResp) {
   let videos = []
   $('.topicList .topicItem').each((index, item) => {
     const tag = $(item).find('.tag')[0];
-    if(['电影', '剧集', '动漫', '影视原盘', '综艺'].includes($(tag).html())) {
+    if(tags.includes($(tag).html())) {
       const a = $(item).find('.title a:first')[0];
+      const imgSrc = $(item).find('.tm-m-photos-thumb li:first')[0]?.attribs['data-src'];
       videos.push({
         "vod_name": $(a).html().replace(/<[^>]*>/g, '').replace(/\s+/g, ''),
         "vod_id": a.attribs.href,
         "vod_remarks": '',
-        "vod_pic": 'https://www.leijing.xyz/favicon.ico'
+        "vod_pic": imgSrc ? `https://www.91panta.cn/${imgSrc}` : 'https://www.91panta.cn/favicon.ico',
       })
     }
   })
@@ -153,8 +158,8 @@ async function search(inReq, _outResp) {
 
 export default {
   meta: {
-    key: 'leijing',
-    name: '雷鲸',
+    key: 'panta',
+    name: '盘Ta',
     type: 3,
   },
   api: async (fastify) => {

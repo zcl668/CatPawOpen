@@ -3,6 +3,7 @@ import * as Ali from './ali.js';
 import * as Quark from './quark.js';
 import * as UC from './uc.js';
 import {Cloud, initCloud} from "./cloud.js";
+import {Yun} from "./yun.js";
 
 export { isEmpty };
 export const ua = IOS_UA;
@@ -78,6 +79,13 @@ export async function play(inReq, _outResp) {
         return {
             parse: 0,
             url: ['原画', url + "#isVideo=true#"],
+        }
+    } else if (flag.startsWith('移动网盘')) {
+        const ids = inReq.body.id.split('*');
+        const url = await Yun.getSharePlay(ids[0], ids[1]);
+        return {
+            parse: 0,
+            url: ['原画', url],
         }
     }
 }

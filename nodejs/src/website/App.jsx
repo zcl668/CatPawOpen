@@ -178,9 +178,6 @@ function App() {
               <TabPane tab="天翼" key="tianyi">
                 <TianYi/>
               </TabPane>
-              <TabPane tab="移动" key="yidong">
-                移动
-              </TabPane>
             </Tabs>
           </TabPane>
           <TabPane tab="站源设置" key="site">
