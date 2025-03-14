@@ -2,6 +2,7 @@ import { IOS_UA, isEmpty} from './misc.js';
 import * as Ali from './ali.js';
 import * as Quark from './quark.js';
 import * as UC from './uc.js';
+import {Cloud, initCloud} from "./cloud.js";
 
 export { isEmpty };
 export const ua = IOS_UA;
@@ -36,6 +37,15 @@ export async function detail(shareUrls) {
                     froms.push(data.from);
                     urls.push(data.url);
                 }
+            } else if (shareUrl.includes('https://cloud.189.cn')) {
+                const data = await Cloud.getShareData(shareUrl);
+                if(data){
+                    Object.keys(data).forEach(it => {
+                        froms.push('天翼网盘-' + it)
+                        const _urls = data[it].map(item => item.name + "$" + [item.fileId, item.shareId].join('*')).join('#');
+                        urls.push(_urls);
+                    })
+                }
             }
         }
 
@@ -64,6 +74,14 @@ export async function play(inReq, _outResp) {
         return await Quark.play(inReq, _outResp);
     } else if (flag.startsWith('UC网盘')) {
         return await UC.play(inReq, _outResp);
+    } else if (flag.startsWith('天翼网盘')) {
+        const ids = inReq.body.id.split('*');
+        await initCloud(inReq)
+        const url = await Cloud.getShareUrl(ids[0], ids[1]);
+        return {
+            parse: 0,
+            url: ['原画', url + "#isVideo=true#"],
+        }
     }
 }
 

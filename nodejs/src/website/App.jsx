@@ -88,7 +88,7 @@ function MuOu() {
       message.success('设置成功')
     } catch (e) {
       console.error(e);
-      message.success(`设置失败：${e?.message}`)
+      message.error(`设置失败：${e?.message}`)
     }
   }
 
@@ -104,6 +104,43 @@ function MuOu() {
       <Input placeholder="请输入木偶域名" value={url} onChange={(e) => setUrl(e.target.value)} />
       <Button type="primary" onClick={saveUrl}>保存</Button>
     </Space.Compact>
+  )
+}
+
+function TianYi() {
+  const [form] = Form.useForm();
+  const submit = async () => {
+    try {
+      const data = await form.validateFields()
+      await http.put('/tianyi/account', data)
+      message.success('入库成功')
+    } catch (e) {
+      console.error(e)
+      message.error(`入库失败：${e?.message}`)
+    }
+  }
+
+  useEffect(() => {
+    http.get('/tianyi/account')
+      .then(data => {
+        form.setFieldsValue(data)
+      })
+  }, [])
+
+  return (
+    <Form form={form}>
+      <Form.Item label={"账号"} name="username">
+        <Input/>
+      </Form.Item>
+      <Form.Item label={"密码"} name="password">
+        <Input.Password/>
+      </Form.Item>
+      <Form.Item label={null}>
+        <Button type="primary" onClick={submit}>
+          保存
+        </Button>
+      </Form.Item>
+    </Form>
   )
 }
 
@@ -139,14 +176,7 @@ function App() {
                 />
               </TabPane>
               <TabPane tab="天翼" key="tianyi">
-                <Form>
-                  <Form.Item label={"账号"}>
-                    <Input/>
-                  </Form.Item>
-                  <Form.Item label={"密码"}>
-                    <Input/>
-                  </Form.Item>
-                </Form>
+                <TianYi/>
               </TabPane>
               <TabPane tab="移动" key="yidong">
                 移动
