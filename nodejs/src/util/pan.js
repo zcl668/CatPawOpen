@@ -78,7 +78,7 @@ export async function play(inReq, _outResp) {
         const url = await Cloud.getShareUrl(ids[0], ids[1]);
         return {
             parse: 0,
-            url: ['原画', url + "#isVideo=true#"],
+            url: ['原画', url],
         }
     } else if (flag.startsWith('移动网盘')) {
         const ids = inReq.body.id.split('*');
