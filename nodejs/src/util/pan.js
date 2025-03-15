@@ -19,19 +19,19 @@ export async function detail(shareUrls) {
         for (const shareUrl of shareUrls) {
             if (shareUrl.includes('https://www.alipan.com')) {
                 const data = await Ali.detail(shareUrl);
-                if(data){
+                if(data && data.from && data.url){
                     froms.push(data.from);
                     urls.push(data.url);
                 }
             } else if (shareUrl.includes('https://pan.quark.cn')) {
                 const data = await Quark.detail(shareUrl);
-                if(data){
+                if(data && data.from && data.url){
                     froms.push(data.from);
                     urls.push(data.url);
                 }
             } else if (shareUrl.includes('https://drive.uc.cn')) {
                 const data = await UC.detail(shareUrl);
-                if(data){
+                if(data && data.from && data.url){
                     froms.push(data.from);
                     urls.push(data.url);
                 }
