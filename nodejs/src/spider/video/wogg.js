@@ -200,6 +200,7 @@ function findElementIndex(arr, elem) {
 }
 
 async function search(inReq, _outResp) {
+    const url = await getCache(inReq.server)
     const pg = inReq.body.page;
     const wd = inReq.body.wd;
     let page = pg || 1;
