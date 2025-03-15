@@ -67,7 +67,7 @@ function QrcodeCard({qrcodeUrl, cacheUrl}) {
       <Divider>
         <Button onClick={generateData}>扫码后点我</Button>
       </Divider>
-      <Input.TextArea value={data} rows={4}/>
+      <Input.TextArea value={data} onChange={e => setData(e.target.value)} rows={4}/>
       <div className={'btns'}>
         <Button onClick={() => copyText(data)} disabled={!data} color="cyan" variant="solid"
                 style={{marginRight: 24}} size={'large'}>复制</Button>
