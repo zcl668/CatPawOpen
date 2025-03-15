@@ -77,12 +77,12 @@ function QrcodeCard({qrcodeUrl, cacheUrl}) {
   )
 }
 
-function MuOu() {
+function SiteDomainSetting({api, name}) {
   const [url, setUrl] = React.useState('');
 
   const saveUrl = async () => {
     try {
-      await http.put('/muou/url', {
+      await http.put(api, {
         url
       })
       message.success('设置成功')
@@ -93,7 +93,7 @@ function MuOu() {
   }
 
   useEffect(() => {
-    http.get('/muou/url')
+    http.get(api)
       .then(data => {
         setUrl(data);
       })
@@ -101,7 +101,7 @@ function MuOu() {
 
   return (
     <Space.Compact style={{ width: '100%' }}>
-      <Input placeholder="请输入木偶域名" value={url} onChange={(e) => setUrl(e.target.value)} />
+      <Input placeholder={`请输入${name}域名`} value={url} onChange={(e) => setUrl(e.target.value)} />
       <Button type="primary" onClick={saveUrl}>保存</Button>
     </Space.Compact>
   )
@@ -183,7 +183,10 @@ function App() {
           <TabPane tab="站源设置" key="site">
             <Tabs>
               <TabPane tab="木偶域名" key="muou">
-                <MuOu/>
+                <SiteDomainSetting api={'/muou/url'} name="木偶"/>
+              </TabPane>
+              <TabPane tab="玩偶域名" key="wogg">
+                <SiteDomainSetting api={'/wogg/url'} name="玩偶"/>
               </TabPane>
             </Tabs>
           </TabPane>

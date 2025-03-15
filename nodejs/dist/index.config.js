@@ -40,6 +40,9 @@ var index_config_default = {
   muou: {
     url: ""
   },
+  wogg: {
+    url: ""
+  },
   alist: [
     {
       name: "🐉神族九帝",

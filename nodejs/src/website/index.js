@@ -4,6 +4,7 @@ import ucTv from "./uc-tv.js";
 import y115 from "./115.js";
 import muou from "./muou.js";
 import tianyi from "./tianyi.js";
+import wogg from "./wogg.js";
 
 export default async function website(fastify) {
   fastify.get('/', (req, res) => {
@@ -28,4 +29,5 @@ export default async function website(fastify) {
   fastify.register(y115, {prefix: '/115'})
   fastify.register(muou, {prefix: '/muou'})
   fastify.register(tianyi, {prefix: '/tianyi'})
+  fastify.register(wogg, {prefix: '/wogg'})
 }
