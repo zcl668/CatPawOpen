@@ -188,6 +188,9 @@ function App() {
               <TabPane tab="玩偶域名" key="wogg">
                 <SiteDomainSetting api={'/wogg/url'} name="玩偶"/>
               </TabPane>
+              <TabPane tab="雷鲸域名" key="leijing">
+                <SiteDomainSetting api={'/leijing/url'} name="雷鲸"/>
+              </TabPane>
             </Tabs>
           </TabPane>
         </Tabs>

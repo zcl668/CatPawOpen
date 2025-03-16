@@ -4,6 +4,7 @@ import {jsoup} from "../../util/htmlParser.js";
 import {Cloud} from "../../util/cloud.js";
 import axios from "axios";
 import {PC_UA} from "../../util/misc.js";
+import {getCache} from "../../website/leijing.js";
 
 async function getHtml(config) {
   try {
@@ -30,8 +31,6 @@ async function request(reqUrl) {
   return resp.data;
 }
 
-const url = 'https://www.leijing.xyz'
-
 const pq = (html) => {
   const jsp = new jsoup();
   return jsp.pq(html);
@@ -54,6 +53,7 @@ async function home(_inReq, _outResp) {
 }
 
 async function category(inReq, _outResp) {
+  const url = await getCache(inReq.server)
   const tid = inReq.body.id;
   const pg = inReq.body.page;
   let page = pg || 1;
@@ -66,7 +66,7 @@ async function category(inReq, _outResp) {
     videos.push({
       "vod_name": a.children[0].data,
       "vod_id": a.attribs.href,
-      "vod_pic": 'https://www.leijing.xyz/favicon.ico'
+      "vod_pic": `${url}/favicon.ico`
     })
   })
   const pageInfo = $('.topicPage .pg')[0]
@@ -82,6 +82,7 @@ async function category(inReq, _outResp) {
 }
 
 async function detail(inReq, _outResp) {
+  const url = await getCache(inReq.server)
   let html = await request(`${url}/${inReq.body.id}`)
   const $ = pq(html)
   let vod = {
@@ -90,19 +91,19 @@ async function detail(inReq, _outResp) {
     "vod_content": $('div.topicContent p:nth-child(1)').text().replace(/\s+/g, ''),
   }
   let content_html = $('.topicContent').html()
-  let link = content_html.match(/<a\s+(?:[^>]*?\s+)?href=["'](https:\/\/cloud\.189\.cn\/[^"']*)["'][^>]*>/gi);
+  let link = content_html.match(/<a\s+(?:[^>]*?\s+)?href=["'](https?:\/\/cloud\.189\.cn\/[^"']*)["'][^>]*>/gi);
   if (!link || link.length === 0) {
     // 如果 a 标签匹配不到，尝试匹配 span 标签中的文本内容
-    link = content_html.match(/<span\s+style="color:\s*#0070C0;\s*">https:\/\/cloud\.189\.cn\/[^<]*<\/span>/gi);
+    link = content_html.match(/<span\s+style="color:\s*#0070C0;\s*">https?:\/\/cloud\.189\.cn\/[^<]*<\/span>/gi);
     if (link && link.length > 0) {
       // 提取 span 标签中的 URL
-      link = link[0].match(/https:\/\/cloud\.189\.cn\/[^<]*/)[0];
+      link = link[0].match(/https?:\/\/cloud\.189\.cn\/[^<]*/)[0];
     } else {
-      link = content_html.match(/https:\/\/cloud\.189\.cn\/[^<]*/)[0]
+      link = content_html.match(/https?:\/\/cloud\.189\.cn\/[^<]*/)[0]
     }
   } else {
     // 提取 a 标签中的 URL
-    link = link[0].match(/https:\/\/cloud\.189\.cn\/[^"']*/)[0];
+    link = link[0].match(/https?:\/\/cloud\.189\.cn\/[^"']*/)[0];
   }
   let playform = []
   let playurls = []
@@ -126,6 +127,7 @@ async function detail(inReq, _outResp) {
 
 
 async function search(inReq, _outResp) {
+  const url = await getCache(inReq.server)
   const pg = inReq.body.page || 1;
   const wd = inReq.body.wd;
   let html = (await getHtml(`${url}/search?keyword=${encodeURIComponent(decodeURIComponent(wd))}&page=${pg}`)).data
@@ -139,7 +141,7 @@ async function search(inReq, _outResp) {
         "vod_name": $(a).html().replace(/<[^>]*>/g, '').replace(/\s+/g, ''),
         "vod_id": a.attribs.href,
         "vod_remarks": '',
-        "vod_pic": 'https://www.leijing.xyz/favicon.ico'
+        "vod_pic": `${url}/favicon.ico`
       })
     }
   })

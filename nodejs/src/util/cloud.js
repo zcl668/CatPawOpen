@@ -87,7 +87,7 @@ export const initCloud = async (req) => {
 
 class CloudDrive {
   constructor() {
-    this.regex = /https:\/\/cloud\.189\.cn\/web\/share\?code=([^&]+)/;//https://cloud.189.cn/web/share?code=qI3aMjqYRrqa
+    this.regex = /https?:\/\/cloud\.189\.cn\/web\/share\?code=([^&]+)/;//https://cloud.189.cn/web/share?code=qI3aMjqYRrqa
     this.config = {
       clientId: '538135150693412',
       model: 'KB2000',
@@ -201,7 +201,7 @@ class CloudDrive {
       const accessCodeMatch = this.shareCode.match(/访问码：([a-zA-Z0-9]+)/);
       this.accessCode = accessCodeMatch ? accessCodeMatch[1] : '';
     } else {
-      const matches_ = url.match(/https:\/\/cloud\.189\.cn\/t\/([^&]+)/);
+      const matches_ = url.match(/https?:\/\/cloud\.189\.cn\/t\/([^&]+)/);
       this.shareCode = matches_ ? matches_[1] : null;
       const accessCodeMatch = this.shareCode.match(/访问码：([a-zA-Z0-9]+)/);
       this.accessCode = accessCodeMatch ? accessCodeMatch[1] : '';
