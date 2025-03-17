@@ -7,6 +7,7 @@ import tianyi from "./tianyi.js";
 import wogg from "./wogg.js";
 import leijing from "./leijing.js";
 import tgsou from "./tgsou.js";
+import pan123 from "./pan123.js";
 
 export default async function website(fastify) {
   fastify.get('/', (req, res) => {
@@ -34,4 +35,5 @@ export default async function website(fastify) {
   fastify.register(wogg, {prefix: '/wogg'})
   fastify.register(leijing, {prefix: '/leijing'})
   fastify.register(tgsou, {prefix: '/tgsou'})
+  fastify.register(pan123, {prefix: '/pan123'})
 }

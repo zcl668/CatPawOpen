@@ -4,6 +4,7 @@ import * as Quark from './quark.js';
 import * as UC from './uc.js';
 import {Cloud, initCloud} from "./cloud.js";
 import {Yun} from "./yun.js";
+import {initPan123Cloud, Pan} from "./pan123.js";
 
 export { isEmpty };
 export const ua = IOS_UA;
@@ -17,7 +18,7 @@ export async function detail(shareUrls) {
         const froms = [];
         const urls = [];
         for (const shareUrl of shareUrls) {
-            if (shareUrl.includes('https://www.alipan.com')) {
+            if (/www.alipan.com|www.aliyundrive.com/.test(shareUrl)) {
                 const data = await Ali.detail(shareUrl);
                 if(data && data.from && data.url){
                     froms.push(data.from);
@@ -43,6 +44,23 @@ export async function detail(shareUrls) {
                         const _urls = data[it].map(item => item.name + "$" + [item.fileId, item.shareId].join('*')).join('#');
                         urls.push(_urls);
                     })
+                }
+            } else if (shareUrl.includes('yun.139.com')) {
+                let data = await Yun.getShareData(shareUrl)
+                Object.keys(data).forEach(it => {
+                    froms.push('Yun-' + it)
+                    const urls = data[it].map(item => item.name + "$" + [item.contentId, item.linkID].join('*')).join('#');
+                    urls.push(urls);
+                })
+            } else if(/www.123684.com|www.123865.com|www.123912.com/.test(shareUrl)) {
+                let shareData = await Pan.getShareData(shareUrl)
+                let videos = await Pan.getFilesByShareUrl(shareData)
+                if (videos.length > 0) {
+                    froms.push('Pan123-' + shareData);
+                    urls.push(videos.map((v) => {
+                        const list = [v.ShareKey, v.FileId, v.S3KeyFlag, v.Size, v.Etag];
+                        return v.FileName + '$' + list.join('*');
+                    }).join('#'))
                 }
             }
         }
@@ -83,6 +101,14 @@ export async function play(inReq, _outResp) {
     } else if (flag.startsWith('移动网盘')) {
         const ids = inReq.body.id.split('*');
         const url = await Yun.getSharePlay(ids[0], ids[1]);
+        return {
+            parse: 0,
+            url: ['原画', url],
+        }
+    } else if (flag.startsWith('Pan123')) {
+        await initPan123Cloud(inReq)
+        const ids = inReq.body.id.split('*');
+        const url = await Pan.getDownload(...ids);
         return {
             parse: 0,
             url: ['原画', url],

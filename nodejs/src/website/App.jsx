@@ -108,12 +108,12 @@ function SiteDomainSetting({api, name}) {
   )
 }
 
-function TianYi() {
+function AccountInfo({api}) {
   const [form] = Form.useForm();
   const submit = async () => {
     try {
       const data = await form.validateFields()
-      await http.put('/tianyi/account', data)
+      await http.put(api, data)
       message.success('入库成功')
     } catch (e) {
       console.error(e)
@@ -122,7 +122,7 @@ function TianYi() {
   }
 
   useEffect(() => {
-    http.get('/tianyi/account')
+    http.get(api)
       .then(data => {
         form.setFieldsValue(data)
       })
@@ -278,7 +278,10 @@ function App() {
                 />
               </TabPane>
               <TabPane tab="天翼" key="tianyi">
-                <TianYi/>
+                <AccountInfo api="/tianyi/account"/>
+              </TabPane>
+              <TabPane tab="123" key="123">
+                <AccountInfo api="/pan123/account"/>
               </TabPane>
             </Tabs>
           </TabPane>
