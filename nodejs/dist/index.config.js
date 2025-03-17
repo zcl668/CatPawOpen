@@ -43,6 +43,12 @@ var index_config_default = {
   wogg: {
     url: ""
   },
+  tgsou: {
+    tgPic: false,
+    count: 0,
+    url: "",
+    channelUsername: ""
+  },
   alist: [
     {
       name: "🐉神族九帝",

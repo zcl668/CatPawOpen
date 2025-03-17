@@ -359,7 +359,7 @@ export async function detail(shareUrl) {
         if (shareData) {
             const videos = await getFilesByShareUrl(shareData);
             if (videos.length > 0) {
-                result.from = 'UC网盘-' + shareData.shareId;
+                result.from = '优夕-' + shareData.shareId;
                 result.url = videos
                         .map((v) => {
                             const ids = [shareData.shareId, v.stoken, v.fid, v.share_fid_token, v.subtitle ? v.subtitle.fid : '', v.subtitle ? v.subtitle.share_fid_token : ''];
@@ -425,7 +425,7 @@ export async function play(inReq, outResp) {
     const ids = id.split('*');
     await initUC(inReq)
     let idx = 0;
-    if (flag.startsWith('UC网盘')) {
+    if (flag.startsWith('优夕')) {
         const transcoding = (await getLiveTranscoding(ids[0], ids[1], ids[2], ids[3])).filter((t) => t.accessable);
         ucTranscodingCache[ids[2]] = transcoding;
         const urls = [];

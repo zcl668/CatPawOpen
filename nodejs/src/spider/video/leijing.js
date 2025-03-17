@@ -112,7 +112,7 @@ async function detail(inReq, _outResp) {
     playPans.push(link);
     let data = await Cloud.getShareData(link)
     Object.keys(data).forEach(it => {
-      playform.push('天翼网盘-' + it)
+      playform.push('天意-' + it)
       const urls = data[it].map(item => item.name + "$" + [item.fileId, item.shareId].join('*')).join('#');
       playurls.push(urls);
     })

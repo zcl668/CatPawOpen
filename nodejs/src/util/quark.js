@@ -279,7 +279,7 @@ export async function detail(shareUrl) {
         if (shareData) {
             const videos = await getFilesByShareUrl(shareData);
             if (videos.length > 0) {
-                result.from = '夸克网盘-' + shareData.shareId;
+                result.from = '夸父-' + shareData.shareId;
                 result.url = videos
                         .map((v) => {
                             const ids = [shareData.shareId, v.stoken, v.fid, v.share_fid_token, v.subtitle ? v.subtitle.fid : '', v.subtitle ? v.subtitle.share_fid_token : ''];
@@ -345,7 +345,7 @@ export async function play(inReq, outResp) {
     const id = inReq.body.id;
     const ids = id.split('*');
     let idx = 0;
-    if (flag.startsWith('夸克网盘')) {
+    if (flag.startsWith('夸父')) {
         const transcoding = (await getLiveTranscoding(ids[0], ids[1], ids[2], ids[3])).filter((t) => t.accessable);
         quarkTranscodingCache[ids[2]] = transcoding;
         const urls = [];

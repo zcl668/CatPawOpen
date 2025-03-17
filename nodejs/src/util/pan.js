@@ -40,7 +40,7 @@ export async function detail(shareUrls) {
                 const data = await Cloud.getShareData(shareUrl);
                 if(data){
                     Object.keys(data).forEach(it => {
-                        froms.push('天翼网盘-' + it)
+                        froms.push('天意-' + it)
                         const _urls = data[it].map(item => item.name + "$" + [item.fileId, item.shareId].join('*')).join('#');
                         urls.push(_urls);
                     })
@@ -48,9 +48,8 @@ export async function detail(shareUrls) {
             } else if (shareUrl.includes('yun.139.com')) {
                 let data = await Yun.getShareData(shareUrl)
                 Object.keys(data).forEach(it => {
-                    froms.push('Yun-' + it)
-                    const urls = data[it].map(item => item.name + "$" + [item.contentId, item.linkID].join('*')).join('#');
-                    urls.push(urls);
+                    froms.push('逸动-' + it)
+                    urls.push(data[it].map(item => item.name + "$" + [item.contentId, item.linkID].join('*')).join('#'));
                 })
             } else if(/www.123684.com|www.123865.com|www.123912.com/.test(shareUrl)) {
                 let shareData = await Pan.getShareData(shareUrl)
@@ -84,13 +83,13 @@ export async function proxy(inReq, _outResp) {
 
 export async function play(inReq, _outResp) {
     const flag = inReq.body.flag;
-    if (flag.startsWith('阿里云盘')) {
+    if (flag.startsWith('阿狸')) {
         return await Ali.play(inReq, _outResp);
-    } else if (flag.startsWith('夸克网盘')) {
+    } else if (flag.startsWith('夸父')) {
         return await Quark.play(inReq, _outResp);
-    } else if (flag.startsWith('UC网盘')) {
+    } else if (flag.startsWith('优夕')) {
         return await UC.play(inReq, _outResp);
-    } else if (flag.startsWith('天翼网盘')) {
+    } else if (flag.startsWith('天意')) {
         const ids = inReq.body.id.split('*');
         await initCloud(inReq)
         const url = await Cloud.getShareUrl(ids[0], ids[1]);
@@ -98,7 +97,7 @@ export async function play(inReq, _outResp) {
             parse: 0,
             url: ['原画', url],
         }
-    } else if (flag.startsWith('移动网盘')) {
+    } else if (flag.startsWith('逸动')) {
         const ids = inReq.body.id.split('*');
         const url = await Yun.getSharePlay(ids[0], ids[1]);
         return {

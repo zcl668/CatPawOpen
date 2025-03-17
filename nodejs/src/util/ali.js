@@ -374,7 +374,7 @@ export async function detail(shareUrl) {
         if (shareData) {
             const videos = await getFilesByShareUrl(shareData);
             if (videos.length > 0) {
-                result.from = '阿里云盘-' + shareData.shareId;
+                result.from = '阿狸-' + shareData.shareId;
                 result.url = videos
                         .map((v) => {
                             const ids = [v.share_id, v.file_id, v.subtitle ? v.subtitle.file_id : ''];
@@ -477,7 +477,7 @@ export async function play(inReq, outResp) {
     const id = inReq.body.id;
     const ids = id.split('*');
     let idx = 0;
-    if (flag.startsWith('阿里云盘')) {
+    if (flag.startsWith('阿狸')) {
         const transcoding = await getLiveTranscoding(ids[0], ids[1]);
         aliTranscodingCache[ids[1]] = transcoding;
         transcoding.sort((a, b) => b.template_width - a.template_width);

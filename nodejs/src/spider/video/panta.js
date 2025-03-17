@@ -1,5 +1,5 @@
 import req from '../../util/req.js';
-import {init, proxy, play} from '../../util/pan.js';
+import {init, proxy, play, detail as _detail} from '../../util/pan.js';
 import {jsoup} from "../../util/htmlParser.js";
 import axios from "axios";
 import {PC_UA} from "../../util/misc.js";
@@ -108,21 +108,11 @@ async function detail(inReq, _outResp) {
     // 提取 a 标签中的 URL
     link = link[0].match(/https:\/\/caiyun\.139\.com\/[^"']*/)[0];
   }
-  let playform = []
-  let playurls = []
-  let playPans = [];
-  if (/caiyun.139.com/.test(link)) {
-    playPans.push(link);
-    let data = await Yun.getShareData(link)
-    Object.keys(data).forEach(it => {
-      playform.push('移动网盘-' + it)
-      const urls = data[it].map(item => item.name + "$" + [item.contentId, item.linkID].join('*')).join('#');
-      playurls.push(urls);
-    })
+  const vodFromUrl = await _detail(link);
+  if (vodFromUrl){
+    vod.vod_play_from = vodFromUrl.froms;
+    vod.vod_play_url = vodFromUrl.urls;
   }
-  vod.vod_play_from = playform.join("$$$")
-  vod.vod_play_url = playurls.join("$$$")
-  vod.vod_play_pan = playPans.join("$$$")
   return {
     list: [vod],
   };
