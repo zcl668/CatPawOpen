@@ -5,8 +5,9 @@ import leijing from "./spider/video/leijing.js";
 import panta from "./spider/video/panta.js";
 import wogg from "./spider/video/wogg.js";
 import zhizhen from "./spider/video/zhizhen.js";
+import tgsou from "./spider/video/tgsou.js";
 
-const spiders = [duoduo, mogg, leijing, panta, wogg, zhizhen, baseset];
+const spiders = [duoduo, mogg, leijing, panta, wogg, zhizhen, tgsou, baseset];
 const spiderPrefix = '/spider';
 
 /**

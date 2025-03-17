@@ -1,8 +1,9 @@
 import React, {useEffect} from 'react';
 import { createRoot } from 'react-dom/client';
-import {Button, Card, Form, Input, Tabs, message, Divider, Space} from 'antd';
+import {Button, Card, Form, Input, Tabs, message, Divider, Space, InputNumber} from 'antd';
 import axios from 'axios'
 import copy from 'copy-to-clipboard';
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import './App.less'
 import refreshImg from './assets/qrcode_refresh.jpg'
 
@@ -144,6 +145,107 @@ function TianYi() {
   )
 }
 
+function TGSou() {
+  const [form] = Form.useForm();
+  const formItemLayout = {
+    labelCol: { span: 6 },
+    wrapperCol: { span: 18 },
+  };
+  const formItemLayoutWithOutLabel = {
+    wrapperCol: { span: 18, offset: 6 },
+  };
+
+  const submit = async () => {
+    const data = await form.validateFields()
+    console.log('data', data)
+    try {
+      await http.put('/tgsou/config', data)
+      message.success('入库成功')
+    } catch (e) {
+      console.error(e)
+      message.error(`入库失败：${e?.message}`)
+    }
+  }
+
+  useEffect(() => {
+    http.get('/tgsou/config')
+      .then(data => {
+        form.setFieldsValue(data)
+      })
+  }, [])
+
+  return (
+    <Form form={form} {...formItemLayout}>
+      <Form.Item label={"服务器地址"} name="url">
+        <Input/>
+      </Form.Item>
+      <Form.List
+        name="channelUsername"
+        rules={[
+          {
+            required: true,
+            message: '请添加频道'
+          },
+        ]}
+      >
+        {(fields, { add, remove }, { errors }) => (
+          <>
+            {fields.map((field, index) => (
+              <Form.Item
+                label={index === 0 ? '频道列表' : ''}
+                required={false}
+                key={field.key}
+                {...(index === 0 ? formItemLayout : formItemLayoutWithOutLabel)}
+                style={{marginBottom: 12}}
+              >
+                <Form.Item
+                  {...field}
+                  validateTrigger={['onChange', 'onBlur']}
+                  rules={[
+                    {
+                      required: true,
+                      whitespace: true,
+                      message: "请输入频道名",
+                    },
+                  ]}
+                  noStyle
+                >
+                  <Input placeholder="请输入频道名" style={{ width: '60%' }}/>
+                </Form.Item>
+                {fields.length > 1 ? (
+                  <MinusCircleOutlined
+                    className="dynamic-delete-button"
+                    onClick={() => remove(field.name)}
+                  />
+                ) : null}
+              </Form.Item>
+            ))}
+            <Form.Item label={''} {...formItemLayoutWithOutLabel}>
+              <Button
+                type="dashed"
+                onClick={() => add()}
+                style={{ width: '60%' }}
+                icon={<PlusOutlined />}
+              >
+                添加频道
+              </Button>
+              <Form.ErrorList errors={errors} />
+            </Form.Item>
+          </>
+        )}
+      </Form.List>
+      <Form.Item label={"单频道资源数量"} name="count">
+        <InputNumber min={1}/>
+      </Form.Item>
+      <Form.Item label={null}>
+        <Button type="primary" onClick={submit}>
+          保存
+        </Button>
+      </Form.Item>
+    </Form>
+  )
+}
+
 function App() {
   return (
     <div className={'container'}>
@@ -190,6 +292,9 @@ function App() {
               </TabPane>
               <TabPane tab="雷鲸域名" key="leijing">
                 <SiteDomainSetting api={'/leijing/url'} name="雷鲸"/>
+              </TabPane>
+              <TabPane tab="TG搜" key="tgsou">
+                <TGSou/>
               </TabPane>
             </Tabs>
           </TabPane>

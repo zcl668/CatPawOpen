@@ -24,3 +24,22 @@
         margin-top: 24px;
     }
 }
+
+.dynamic-delete-button {
+    position: relative;
+    top: 2px;
+    margin: 0 8px;
+    color: #555;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &:hover {
+        color: #777;
+    }
+
+    &[disabled] {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+}
