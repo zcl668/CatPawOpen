@@ -15,11 +15,12 @@ async function init(inReq, outResp) {
 
 
 async function home(e, t) {
+  const url = `${e.server.address().url}/website`
   return {
     class: [
       {
         type_id: 'setting',
-        type_name: '配置'
+        type_name: url
       }
     ]
   }
