@@ -1,6 +1,6 @@
 export default {
     ali: {
-        token: 'token',
+        token: '',
         token280: 'token280',
     },
     quark: {

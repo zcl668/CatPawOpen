@@ -24,7 +24,7 @@ __export(index_config_exports, {
 module.exports = __toCommonJS(index_config_exports);
 var index_config_default = {
   ali: {
-    token: "token",
+    token: "",
     token280: "token280"
   },
   quark: {

@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 import { createRoot } from 'react-dom/client';
-import {Button, Card, Form, Input, Tabs, message, Divider, Space, InputNumber} from 'antd';
+import {Button, Card, Form, Input, Tabs, message, Divider, Space, InputNumber, Row, Col} from 'antd';
 import axios from 'axios'
 import copy from 'copy-to-clipboard';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
@@ -72,6 +72,63 @@ function QrcodeCard({qrcodeUrl, cacheUrl}) {
       <div className={'btns'}>
         <Button onClick={() => copyText(data)} disabled={!data} color="cyan" variant="solid"
                 style={{marginRight: 24}} size={'large'}>复制</Button>
+        <Button onClick={storeData} disabled={!data} type={'primary'} size={'large'}>入库</Button>
+      </div>
+    </div>
+  )
+}
+
+function AliQrcodeCard() {
+  const [data, setData] = React.useState({
+    token: '',
+    token280: ''
+  });
+  const cacheUrl = '/ali/token'
+
+  const generateData = async () => {
+    const data = await http.post(cacheUrl)
+    setData(data)
+  }
+
+  const storeData = async () => {
+    await http.put(cacheUrl, {
+      data,
+    })
+    message.success('入库成功')
+  }
+
+  useEffect(() => {
+    http.get(cacheUrl)
+      .then(data => {
+        setData(data);
+      })
+  }, [])
+
+  return (
+    <div className={'qrcodeCard'}>
+      <QrcodeImage src={'/website/ali/qrcode'}/>
+      <Divider>
+        <Button onClick={generateData}>扫码后点我</Button>
+      </Divider>
+      <Row>
+        <Col span={11}>
+          <p>Token</p>
+          <Input.TextArea
+            value={data.token}
+            onChange={e => setData({token: e.target.value, token280: data.token280})}
+            rows={4}
+          />
+        </Col>
+        <Col span={11} offset={2}>
+          <p>OpenToken</p>
+          <Input.TextArea
+            value={data.token280}
+            onChange={e => setData({token: data.token, token280: e.target.value})}
+            rows={4}
+          />
+        </Col>
+      </Row>
+      <div className={'btns'}>
         <Button onClick={storeData} disabled={!data} type={'primary'} size={'large'}>入库</Button>
       </div>
     </div>
@@ -276,6 +333,9 @@ function App() {
                   qrcodeUrl="/website/115/qrcode"
                   cacheUrl="/115/cookie"
                 />
+              </TabPane>
+              <TabPane tab="阿里" key="ali">
+                <AliQrcodeCard />
               </TabPane>
               <TabPane tab="天翼" key="tianyi">
                 <AccountInfo api="/tianyi/account"/>
