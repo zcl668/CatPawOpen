@@ -1,5 +1,5 @@
 import { init as _init ,detail as _detail ,proxy ,play } from '../../util/pan.js';
-import {getUrlCache, getChannelUsernameCache, getCountCache} from "../../website/tgsou.js";
+import {getUrlCache, getChannelUsernameCache, getCountCache, getPicCache} from "../../website/tgsou.js";
 import axios from "axios";
 
 async function init(inReq, _outResp) {
@@ -44,8 +44,9 @@ async function search(inReq, _outResp) {
   const url = await getUrlCache(inReq.server)
   const count = await getCountCache(inReq.server)
   const channelUsername = await getChannelUsernameCache(inReq.server)
+  const pic = await getPicCache(inReq.server)
   const wd = inReq.body.wd;
-  const res = await axios.get(`${url}?pic=false&count=${count}&channelUsername=${encodeURIComponent(channelUsername)}&keyword=${encodeURIComponent(wd)}`);
+  const res = await axios.get(`${url}?pic=${pic}&count=${count}&channelUsername=${encodeURIComponent(channelUsername)}&keyword=${encodeURIComponent(wd)}`);
   const rs = []
   const panInfos = [
     {name: '逸动', domains: ['caiyun.139.com'], 'pic': 'https://yun.139.com/w/static/img/LOGO.png'},
@@ -61,14 +62,15 @@ async function search(inReq, _outResp) {
     if (!vodListStr) continue;
     const vodList = vodListStr.split("##");
     for (let p = 0; p < vodList.length && p <= count; p++) {
-      const [link, title] = vodList[p].split("$$")
+      const [linkInfo, title] = vodList[p].split("$$")
+      const [link, imgId] = linkInfo.split('@')
       if (!rs.some(item => item.vod_id === link)) {
         const panInfo = panInfos.find(pan => pan.domains.some(domain => link.includes(domain)));
         if (panInfo) {
           rs.push({
             vod_id: link?.replace(/\s+/g, ''),
             vod_name: title?.replace(/\s+/g, '') || wd,
-            vod_pic: panInfo.pic,
+            vod_pic: imgId ? `${url}/down?id=${imgId}&channelUsername=${group}` : panInfo.pic,
             vod_remarks: `${panInfo.name}:${group}`,
           })
         }

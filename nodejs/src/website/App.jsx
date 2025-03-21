@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 import { createRoot } from 'react-dom/client';
-import {Button, Card, Form, Input, Tabs, message, Divider, Space, InputNumber, Row, Col} from 'antd';
+import {Button, Card, Form, Input, Tabs, message, Divider, Space, InputNumber, Row, Col, Switch} from 'antd';
 import axios from 'axios'
 import copy from 'copy-to-clipboard';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
@@ -293,6 +293,9 @@ function TGSou() {
       </Form.List>
       <Form.Item label={"单频道资源数量"} name="count">
         <InputNumber min={1}/>
+      </Form.Item>
+      <Form.Item label={"显示图片"} name="pic">
+        <Switch />
       </Form.Item>
       <Form.Item label={null}>
         <Button type="primary" onClick={submit}>

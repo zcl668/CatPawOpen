@@ -16,6 +16,10 @@ export const getChannelUsernameCache = (server) => {
   return getCache(server, 'channelUsername', 'Q66Share,alyp_TV,ucpanpan,ucquark,tianyirigeng,shares_115,cloud189_group,tianyi_pd2,hao115,guaguale115,yunpanchat,ydypzyfx,tgsearchers,NewQuark,Mbox115,dianyingshare,XiangxiuNB,yunpanpan,kuakeyun,Quark_Movies,qixingzhenren,longzbija,alyp_4K_Movies,yunpanshare,shareAliyun,ikiviyyp,alyp_1,xx123pan')
 }
 
+export const getPicCache = (server) => {
+  return getCache(server, 'pic', false)
+}
+
 export const setCache = async (server, key, value) => {
   await server.db.push(`/tgsou/${key}`, value);
 }
@@ -25,12 +29,14 @@ export default async function tgsou(fastify) {
     const url = await getUrlCache(req.server)
     const count = await getCountCache(req.server)
     const channelUsername = await getChannelUsernameCache(req.server)
+    const pic = await getPicCache(req.server)
     res.send({
       code: 0,
       data: {
         url,
         count: Number(count),
-        channelUsername: channelUsername.split(',')
+        channelUsername: channelUsername.split(','),
+        pic,
       }
     })
   })
@@ -39,6 +45,7 @@ export default async function tgsou(fastify) {
     await setCache(req.server, 'url', req.body.url)
     await setCache(req.server, 'count', req.body.count)
     await setCache(req.server, 'channelUsername', req.body.channelUsername.join(','))
+    await setCache(req.server, 'pic', req.body.pic)
     res.send({
       code: 0,
     })
