@@ -5,6 +5,7 @@ import * as UC from './uc.js';
 import {Cloud, initCloud} from "./cloud.js";
 import {Yun} from "./yun.js";
 import {initPan123Cloud, Pan} from "./pan123.js";
+import * as Y115 from './115.js';
 
 export { isEmpty };
 export const ua = IOS_UA;
@@ -61,6 +62,12 @@ export async function detail(shareUrls) {
                         return v.FileName + '$' + list.join('*');
                     }).join('#'))
                 }
+            } else if(/115.com|anxia.com|115cdn.com/.test(shareUrl)) {
+                const data = await Y115.detail(shareUrl);
+                if(data && data.from && data.url){
+                    froms.push(data.from);
+                    urls.push(data.url);
+                }
             }
         }
 
@@ -112,6 +119,8 @@ export async function play(inReq, _outResp) {
             parse: 0,
             url: ['原画', url],
         }
+    } else if (flag.startsWith('115')) {
+        return await Y115.play(inReq, _outResp);
     }
 }
 
