@@ -8,7 +8,8 @@ export default {
     },
     uc: {
         cookie: '',
-        token: 'token'
+        token: 'token',
+        ut: 'ut'
     },
     y115: {
         cookie: ''

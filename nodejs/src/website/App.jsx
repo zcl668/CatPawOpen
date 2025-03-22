@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 import { createRoot } from 'react-dom/client';
-import {Button, Card, Form, Input, Tabs, message, Divider, Space, InputNumber, Row, Col, Switch} from 'antd';
+import {Button, Card, Form, Input, Tabs, message, Divider, Space, InputNumber, Row, Col, Switch, Alert} from 'antd';
 import axios from 'axios'
 import copy from 'copy-to-clipboard';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
@@ -70,9 +70,9 @@ function QrcodeCard({qrcodeUrl, cacheUrl}) {
       </Divider>
       <Input.TextArea value={data} onChange={e => setData(e.target.value)} rows={4}/>
       <div className={'btns'}>
-        <Button onClick={() => copyText(data)} disabled={!data} color="cyan" variant="solid"
+        <Button onClick={() => copyText(data)} color="cyan" variant="solid"
                 style={{marginRight: 24}} size={'large'}>复制</Button>
-        <Button onClick={storeData} disabled={!data} type={'primary'} size={'large'}>入库</Button>
+        <Button onClick={storeData} type={'primary'} size={'large'}>入库</Button>
       </div>
     </div>
   )
@@ -306,10 +306,47 @@ function TGSou() {
   )
 }
 
+function UCUt() {
+  const [ut, setUt] = React.useState('');
+  const api = '/uc/ut'
+
+  const save = async () => {
+    try {
+      await http.put(api, {
+        ut
+      })
+      message.success('设置成功')
+    } catch (e) {
+      console.error(e);
+      message.error(`设置失败：${e?.message}`)
+    }
+  }
+
+  useEffect(() => {
+    http.get(api)
+      .then(data => {
+        setUt(data);
+      })
+  }, [])
+
+  return (
+    <div>
+      <Alert message="关注微信公众号“王二小放牛娃”，输入“机器码”即可获得" type="info" style={{marginBottom: 16}}/>
+      <Input.TextArea
+        placeholder={`请输入UC机器码`}
+        value={ut}
+        onChange={(e) => setUt(e.target.value)}
+        rows={4}
+      />
+      <Button type="primary" onClick={save} style={{marginTop: 16}}>保存</Button>
+    </div>
+  )
+}
+
 function App() {
   return (
     <div className={'container'}>
-      <Card style={{ height: 600, width: 500 }}>
+      <Card style={{ height: 600, width: 600 }}>
         <Tabs type="card">
           <TabPane tab="登录信息" key="account">
             <Tabs>
@@ -330,6 +367,9 @@ function App() {
                   qrcodeUrl="/website/uc-tv/qrcode"
                   cacheUrl="/uc-tv/token"
                 />
+              </TabPane>
+              <TabPane tab="UC机器码" key="uc-ut">
+                <UCUt/>
               </TabPane>
               <TabPane tab="115" key="115">
                 <QrcodeCard

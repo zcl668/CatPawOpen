@@ -58,6 +58,7 @@ let ckey = null;
 const apiUrl = 'https://pc-api.uc.cn/1/clouddrive/';
 export let cookie = '';
 export let tokenDbKey = '';
+export let utDbKey = '';
 
 const shareTokenCache = {};
 const saveDirName = 'CatVodOpen';
@@ -69,6 +70,7 @@ export async function initUC(inReq) {
     cookie = cfg.cookie;
     ckey = CryptoJS.enc.Hex.stringify(CryptoJS.MD5(cfg.cookie)).toString();
     tokenDbKey = CryptoJS.enc.Hex.stringify(CryptoJS.MD5(cfg.token)).toString();
+    utDbKey = CryptoJS.enc.Hex.stringify(CryptoJS.MD5(cfg.ut)).toString();
     const localCfg = await localDb.getObjectDefault(`/uc`, {});
     if (localCfg[ckey]) {
         cookie = localCfg[ckey];
@@ -297,7 +299,7 @@ export async function getDownload(shareId, stoken, fileId, fileToken, clean) {
     }
     const localCfg = await localDb.getObjectDefault(`/uc`, {});
     const token = localCfg[tokenDbKey]
-    console.log('localCfg', localCfg, token)
+    const ut = localCfg[utDbKey]
     if (token) {
         let video = []
         const pathname = '/file';
@@ -343,7 +345,11 @@ export async function getDownload(shareId, stoken, fileId, fileToken, clean) {
             return req.data.data
         }
     } else {
-        const down = await api(`file/download?${pr}`, {
+        let url = `file/download?${pr}`
+        if (ut) {
+            url += `&ut=${ut}`
+        }
+        const down = await api(url, {
             fids: [saveFileIdCaches[fileId]],
         });
         if (down.data) {

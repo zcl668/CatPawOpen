@@ -19,6 +19,17 @@ export const setCache = async (server, value) => {
   await server.db.push(`/uc/${key}`, value);
 }
 
+export const getUtCache = async (server) => {
+  const key = CryptoJS.enc.Hex.stringify(CryptoJS.MD5(server.config.uc.ut)).toString()
+  const quarkObj = await server.db.getObjectDefault(`/uc`, {})
+  return quarkObj[key] ?? ''
+}
+
+export const setUtCache = async (server, value) => {
+  const key = CryptoJS.enc.Hex.stringify(CryptoJS.MD5(server.config.uc.ut)).toString()
+  await server.db.push(`/uc/${key}`, value);
+}
+
 export default async function uc(fastify) {
   fastify.get('/qrcode', async (req, res) => {
     let qrcodeData = await axios.get(`https://api.open.uc.cn/cas/ajax/getTokenForQrcodeLogin?client_id=381&v=1.2&request_id=${Date.now()}`, {
@@ -95,6 +106,20 @@ export default async function uc(fastify) {
 
   fastify.put('/cookie', async (req, res) => {
     await setCache(req.server, req.body.cookie)
+    res.send({
+      code: 0,
+    })
+  })
+
+  fastify.get('/ut', async (req, res) => {
+    res.send({
+      code: 0,
+      data: await getUtCache(req.server)
+    })
+  })
+
+  fastify.put('/ut', async (req, res) => {
+    await setUtCache(req.server, req.body.ut)
     res.send({
       code: 0,
     })
