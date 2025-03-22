@@ -6,6 +6,7 @@ import {Cloud, initCloud} from "./cloud.js";
 import {Yun} from "./yun.js";
 import {initPan123Cloud, Pan} from "./pan123.js";
 import * as Y115 from './115.js';
+import {videosHandle} from "./utils.js";
 
 export { isEmpty };
 export const ua = IOS_UA;
@@ -38,30 +39,35 @@ export async function detail(shareUrls) {
                     urls.push(data.url);
                 }
             } else if (shareUrl.includes('https://cloud.189.cn')) {
-                const data = await Cloud.getShareData(shareUrl);
-                if(data){
-                    Object.keys(data).forEach(it => {
-                        froms.push('天意-' + it)
-                        const _urls = data[it].map(item => item.name + "$" + [item.fileId, item.shareId].join('*')).join('#');
-                        urls.push(_urls);
+                const shareData = await Cloud.getShareData(shareUrl);
+                if(shareData) {
+                    Object.keys(shareData).forEach(it => {
+                        const data = videosHandle('天意-' + it, shareData[it])
+                        if(data && data.from && data.url){
+                            froms.push(data.from);
+                            urls.push(data.url);
+                        }
                     })
                 }
             } else if (shareUrl.includes('yun.139.com')) {
-                let data = await Yun.getShareData(shareUrl)
-                Object.keys(data).forEach(it => {
-                    froms.push('逸动-' + it)
-                    urls.push(data[it].map(item => item.name + "$" + [item.contentId, item.linkID].join('*')).join('#'));
+                let shareData = await Yun.getShareData(shareUrl)
+                Object.keys(shareData).forEach(it => {
+                    const data = videosHandle('逸动-' + it, shareData[it])
+                    if(data && data.from && data.url){
+                        froms.push(data.from);
+                        urls.push(data.url);
+                    }
                 })
             } else if(/www.123684.com|www.123865.com|www.123912.com/.test(shareUrl)) {
-                let shareData = await Pan.getShareData(shareUrl)
-                let videos = await Pan.getFilesByShareUrl(shareData)
-                if (videos.length > 0) {
-                    froms.push('Pan123-' + shareData);
-                    urls.push(videos.map((v) => {
-                        const list = [v.ShareKey, v.FileId, v.S3KeyFlag, v.Size, v.Etag];
-                        return v.FileName + '$' + list.join('*');
-                    }).join('#'))
-                }
+                const shareData = await Pan.getShareData(shareUrl)
+                let files = await Pan.getFilesByShareUrl(shareData)
+                Object.keys(files).forEach(it => {
+                    const data = videosHandle('Pan123-' + it, files[it])
+                    if(data && data.from && data.url){
+                        froms.push(data.from);
+                        urls.push(data.url);
+                    }
+                })
             } else if(/115.com|anxia.com|115cdn.com/.test(shareUrl)) {
                 const data = await Y115.detail(shareUrl);
                 if(data && data.from && data.url){

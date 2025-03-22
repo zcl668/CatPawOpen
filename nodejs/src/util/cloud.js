@@ -244,6 +244,15 @@ class CloudDrive {
         file['root'] = file['root'].filter(item => item && Object.keys(item).length > 0);
       }
     }
+    Object.keys(file).forEach(key => {
+      file[key] = file[key].map(item => {
+        return {
+          vod_id: [item.fileId, item.shareId].join('*'),
+          vod_name: item.name,
+          vod_size: item.size,
+        }
+      })
+    })
     return file;
   }
 
@@ -366,6 +375,7 @@ class CloudDrive {
               name: filename[i],
               fileId: ids[i],
               shareId: this.shareId,
+              size: fileList[i].size,
             })
           }
         }

@@ -1,5 +1,5 @@
 import req from '../../util/req.js';
-import {init, proxy, play} from '../../util/pan.js';
+import {init, proxy, play, detail as _detail} from '../../util/pan.js';
 import {jsoup} from "../../util/htmlParser.js";
 import {Cloud} from "../../util/cloud.js";
 import axios from "axios";
@@ -105,21 +105,13 @@ async function detail(inReq, _outResp) {
     // 提取 a 标签中的 URL
     link = link[0].match(/https?:\/\/cloud\.189\.cn\/[^"']*/)[0];
   }
-  let playform = []
-  let playurls = []
-  let playPans = [];
   if (/cloud.189.cn/.test(link)) {
-    playPans.push(link);
-    let data = await Cloud.getShareData(link)
-    Object.keys(data).forEach(it => {
-      playform.push('天意-' + it)
-      const urls = data[it].map(item => item.name + "$" + [item.fileId, item.shareId].join('*')).join('#');
-      playurls.push(urls);
-    })
+    const vodFromUrl = await _detail(link);
+    if (vodFromUrl){
+      vod.vod_play_from = vodFromUrl.froms;
+      vod.vod_play_url = vodFromUrl.urls;
+    }
   }
-  vod.vod_play_from = playform.join("$$$")
-  vod.vod_play_url = playurls.join("$$$")
-  vod.vod_play_pan = playPans.join("$$$")
   return {
     list: [vod],
   };

@@ -1,8 +1,9 @@
 import req from './req.js';
 import chunkStream  from './chunk.js';
 import CryptoJS from 'crypto-js';
-import { formatPlayUrl, conversion, lcs, findBestLCS, delay} from './misc.js';
+import { findBestLCS, delay} from './misc.js';
 import axios from "axios";
+import {videosHandle} from "./utils.js";
 
 export const Addition = {
     DeviceID: '07b48aaba8a739356ab8107b5e230ad4',
@@ -355,21 +356,20 @@ export async function getDownload(shareId, stoken, fileId, fileToken, clean) {
 export async function detail(shareUrl) {
     if (shareUrl.includes('https://drive.uc.cn')) {
         const shareData = getShareData(shareUrl);
-        const result = {};
         if (shareData) {
-            const videos = await getFilesByShareUrl(shareData);
-            if (videos.length > 0) {
-                result.from = '优夕-' + shareData.shareId;
-                result.url = videos
-                        .map((v) => {
-                            const ids = [shareData.shareId, v.stoken, v.fid, v.share_fid_token, v.subtitle ? v.subtitle.fid : '', v.subtitle ? v.subtitle.share_fid_token : ''];
-                            const size = conversion(v.size);
-                            return formatPlayUrl('', ` ${v.file_name.replace(/.[^.]+$/,'')}  [${size}]`) + '$' + ids.join('*');
-                        })
-                        .join('#')
-            }
+            let videos = await getFilesByShareUrl(shareData);
+            videos = videos.map(v => {
+                const ids = [shareData.shareId, v.stoken, v.fid, v.share_fid_token, v.subtitle ? v.subtitle.fid : '', v.subtitle ? v.subtitle.share_fid_token : ''];
+                return {
+                    vod_id: ids.join('*'),
+                    vod_name: v.file_name,
+                    vod_size: v.size,
+                }
+            })
+            return videosHandle('优夕-' + shareData.shareId, videos)
+        } else {
+            return {}
         }
-        return result;
     }
 }
 

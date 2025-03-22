@@ -115,6 +115,15 @@ class YunDrive {
                 file['root'] = file['root'].filter(item => item && Object.keys(item).length > 0);
             }
         }
+        Object.keys(file).forEach((key) => {
+            file[key] = file[key].map(item => {
+                return {
+                    vod_name: item.name,
+                    vod_id: [item.contentId, item.linkID].join('*'),
+                    vod_size: item.size,
+                }
+            })
+        })
         return file;
     }
 
@@ -162,7 +171,8 @@ class YunDrive {
                 return filteredItems.map(it => ({
                     name: it.coName,
                     contentId: it.coID,
-                    linkID: this.linkID
+                    linkID: this.linkID,
+                    size: it.coSize,
                 }));
             } else if (json.caLst !== null) {
                 const rootPaths = json.caLst.map(it => it.path);

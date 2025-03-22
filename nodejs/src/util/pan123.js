@@ -93,10 +93,9 @@ class Pan123 {
         if (matches) {
             if(matches[2].indexOf('?') > 0){
                 return matches[2].split('?')[0]
-            }else {
+            } else {
                 return  matches[2].match(/www/g)?matches[1]:matches[2];
             }
-
         }
         return null;
     }
@@ -121,7 +120,16 @@ class Pan123 {
                 delete file[key];
             }
         }
-        return Object.values(file).flat();
+        Object.keys(file).forEach(key => {
+            file[key] = file[key].map(item => {
+                return {
+                    vod_id: [item.ShareKey, item.FileId, item.S3KeyFlag, item.Size, item.Etag].join('*'),
+                    vod_name: item.FileName,
+                    vod_size: item.Size,
+                }
+            })
+        })
+        return file;
     }
 
     async getShareInfo(shareKey,SharePwd,next,ParentFileId) {

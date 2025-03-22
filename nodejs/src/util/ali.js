@@ -1,8 +1,9 @@
 import dayjs from 'dayjs';
 import CryptoJS from 'crypto-js';
-import { IOS_UA, formatPlayUrl, conversion, isEmpty, lcs, findBestLCS, delay} from './misc.js';
+import { IOS_UA, findBestLCS, delay} from './misc.js';
 import req from './req.js';
 import * as HLS from 'hls-parser';
+import {videosHandle} from "./utils.js";
 
 // https://www.alipan.com/s/8stgXuDFsLy
 export function getShareData(url) {
@@ -126,7 +127,7 @@ async function login() {
 async function openAuth() {
     if (!oauth.access_token || oauth.expire_time - dayjs().unix() < 120) {
         let openResp = await req.post('https://aliyundrive-oauth.messense.me/oauth/access_token',{
-            grant_type: 'refresh_token', 
+            grant_type: 'refresh_token',
             refresh_token: token280,
         }, {
             headers: baseHeaders,
@@ -134,7 +135,7 @@ async function openAuth() {
 
         if (openResp.status != 200) {
             openResp = await req.post('https://api.nn.ci/alist/ali_open/token',{
-                grant_type: 'refresh_token', 
+                grant_type: 'refresh_token',
                 refresh_token: token280,
             }, {
                 headers: baseHeaders,
@@ -372,22 +373,21 @@ export async function getDownload(shareId, fileId) {
 export async function detail(shareUrl) {
     if (/www.alipan.com|www.aliyundrive.com/.test(shareUrl)) {
         const shareData = getShareData(shareUrl);
-        const result = {};
         if (shareData) {
-            const videos = await getFilesByShareUrl(shareData);
-            if (videos.length > 0) {
-                result.from = '阿狸-' + shareData.shareId;
-                result.url = videos
-                        .map((v) => {
-                            const ids = [v.share_id, v.file_id, v.subtitle ? v.subtitle.file_id : ''];
-                            const size = conversion(v.size);
-                            return formatPlayUrl('', ` ${v.name.replace(/.[^.]+$/,'')}  [${size}]`) + '$' + ids.join('*');
-                        })
-                        .join('#')
-            }
+            let videos = await getFilesByShareUrl(shareData);
+            videos = videos.map(v => {
+                const ids = [v.share_id, v.file_id, v.subtitle ? v.subtitle.file_id : ''];
+                return {
+                    vod_id: ids.join('*'),
+                    vod_name: v.name,
+                    vod_size: v.size,
+                }
+            })
+            return videosHandle('阿狸-' + shareData.shareId, videos)
+        } else {
+            return {}
         }
-        return result;
-    }                
+    }
 }
 
 const aliTranscodingCache = {};

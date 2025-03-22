@@ -2,6 +2,7 @@ import {conversion, formatPlayUrl} from "./misc.js";
 import axios from "axios";
 import {getCache} from "../website/115.js";
 import {request} from "http";
+import {videosHandle} from "./utils.js";
 
 export function getShareData(shareUrl) {
   let regex = /https:\/\/(?:115|anxia|115cdn)\.com\/s\/([a-zA-Z0-9]+)\?password=([a-zA-Z0-9]+)/;
@@ -209,21 +210,20 @@ async function getFilesByShareUrl({shareCode, receiveCode, dirID = ""}) {
 
 export async function detail(shareUrl) {
   const shareData = getShareData(shareUrl);
-  const result = {};
   if (shareData) {
-    const videos = await getFilesByShareUrl(shareData);
-    if (videos.length > 0) {
-      result.from = '115-' + shareData.shareCode;
-      result.url = videos
-        .map((v) => {
-          const ids = [shareData.shareCode, shareData.receiveCode, v.fid];
-          const size = conversion(v.s);
-          return formatPlayUrl('', ` ${v.n.replace(/.[^.]+$/,'')}  [${size}]`) + '$' + ids.join('*');
-        })
-        .join('#')
-    }
+    let videos = await getFilesByShareUrl(shareData);
+    videos = videos.map(v => {
+      const ids = [shareData.shareCode, shareData.receiveCode, v.fid];
+      return {
+        vod_id: ids.join('*'),
+        vod_name: v.n,
+        vod_size: v.s,
+      }
+    })
+    return videosHandle('115-' + shareData.shareCode, videos)
+  } else {
+    return {}
   }
-  return result;
 }
 
 export async function play(inReq) {
