@@ -7,6 +7,7 @@ import {Yun} from "./yun.js";
 import {initPan123Cloud, Pan} from "./pan123.js";
 import * as Y115 from './115.js';
 import {videosHandle} from "./utils.js";
+import {is115Link, is123Link, isAliLink, isQuarkLink, isTyLink, isUcLink, isYdLink} from "./linkDetect.js";
 
 export { isEmpty };
 export const ua = IOS_UA;
@@ -20,25 +21,25 @@ export async function detail(shareUrls) {
         const froms = [];
         const urls = [];
         for (const shareUrl of shareUrls) {
-            if (/www.alipan.com|www.aliyundrive.com/.test(shareUrl)) {
+            if (isAliLink(shareUrl)) {
                 const data = await Ali.detail(shareUrl);
                 if(data && data.from && data.url){
                     froms.push(data.from);
                     urls.push(data.url);
                 }
-            } else if (shareUrl.includes('https://pan.quark.cn')) {
+            } else if (isQuarkLink(shareUrl)) {
                 const data = await Quark.detail(shareUrl);
                 if(data && data.from && data.url){
                     froms.push(data.from);
                     urls.push(data.url);
                 }
-            } else if (shareUrl.includes('https://drive.uc.cn')) {
+            } else if (isUcLink(shareUrl)) {
                 const data = await UC.detail(shareUrl);
                 if(data && data.from && data.url){
                     froms.push(data.from);
                     urls.push(data.url);
                 }
-            } else if (shareUrl.includes('https://cloud.189.cn')) {
+            } else if (isTyLink(shareUrl)) {
                 const shareData = await Cloud.getShareData(shareUrl);
                 if(shareData) {
                     Object.keys(shareData).forEach(it => {
@@ -49,7 +50,7 @@ export async function detail(shareUrls) {
                         }
                     })
                 }
-            } else if (shareUrl.includes('yun.139.com')) {
+            } else if (isYdLink(shareUrl)) {
                 let shareData = await Yun.getShareData(shareUrl)
                 Object.keys(shareData).forEach(it => {
                     const data = videosHandle('逸动-' + it, shareData[it])
@@ -58,7 +59,7 @@ export async function detail(shareUrls) {
                         urls.push(data.url);
                     }
                 })
-            } else if(/www.123684.com|www.123865.com|www.123912.com/.test(shareUrl)) {
+            } else if(is123Link(shareUrl)) {
                 const shareData = await Pan.getShareData(shareUrl)
                 let files = await Pan.getFilesByShareUrl(shareData)
                 Object.keys(files).forEach(it => {
@@ -68,7 +69,7 @@ export async function detail(shareUrls) {
                         urls.push(data.url);
                     }
                 })
-            } else if(/115.com|anxia.com|115cdn.com/.test(shareUrl)) {
+            } else if(is115Link(shareUrl)) {
                 const data = await Y115.detail(shareUrl);
                 if(data && data.from && data.url){
                     froms.push(data.from);

@@ -9,6 +9,7 @@ import leijing from "./leijing.js";
 import tgsou from "./tgsou.js";
 import pan123 from "./pan123.js";
 import ali from "./ali.js";
+import tgchannel from "./tgchannel.js";
 
 export default async function website(fastify) {
   fastify.get('/', (req, res) => {
@@ -38,4 +39,5 @@ export default async function website(fastify) {
   fastify.register(tgsou, {prefix: '/tgsou'})
   fastify.register(pan123, {prefix: '/pan123'})
   fastify.register(ali, {prefix: '/ali'})
+  fastify.register(tgchannel, {prefix: '/tgchannel'})
 }

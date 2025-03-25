@@ -3,6 +3,7 @@ import chunkStream  from './chunk.js';
 import CryptoJS from 'crypto-js';
 import { findBestLCS, delay} from './misc.js';
 import {videosHandle} from "./utils.js";
+import {isQuarkLink} from "./linkDetect.js";
 
 export function getShareData(url) {
     let regex = /https:\/\/pan\.quark\.cn\/s\/([^\\|#/]+)/;
@@ -274,7 +275,7 @@ export async function getDownload(shareId, stoken, fileId, fileToken, clean) {
 }
 
 export async function detail(shareUrl) {
-    if (shareUrl.includes('https://pan.quark.cn')) {
+    if (isQuarkLink('https://pan.quark.cn')) {
         const shareData = getShareData(shareUrl);
         if (shareData) {
             let videos = await getFilesByShareUrl(shareData);

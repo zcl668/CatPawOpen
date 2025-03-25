@@ -50,6 +50,7 @@ var index_config_default = {
     url: "",
     channelUsername: ""
   },
+  tgchannel: {},
   alist: [
     {
       name: "🐉神族九帝",

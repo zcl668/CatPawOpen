@@ -4,6 +4,7 @@ import CryptoJS from 'crypto-js';
 import { findBestLCS, delay} from './misc.js';
 import axios from "axios";
 import {videosHandle} from "./utils.js";
+import {isUcLink} from "./linkDetect.js";
 
 export const Addition = {
     DeviceID: '07b48aaba8a739356ab8107b5e230ad4',
@@ -360,7 +361,7 @@ export async function getDownload(shareId, stoken, fileId, fileToken, clean) {
 }
 
 export async function detail(shareUrl) {
-    if (shareUrl.includes('https://drive.uc.cn')) {
+    if (isUcLink(shareUrl)) {
         const shareData = getShareData(shareUrl);
         if (shareData) {
             let videos = await getFilesByShareUrl(shareData);

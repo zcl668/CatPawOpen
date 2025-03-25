@@ -5,6 +5,7 @@ import {Cloud} from "../../util/cloud.js";
 import axios from "axios";
 import {PC_UA} from "../../util/misc.js";
 import {getCache} from "../../website/leijing.js";
+import {isTyLink} from "../../util/linkDetect.js";
 
 async function getHtml(config) {
   try {
@@ -105,7 +106,7 @@ async function detail(inReq, _outResp) {
     // 提取 a 标签中的 URL
     link = link[0].match(/https?:\/\/cloud\.189\.cn\/[^"']*/)[0];
   }
-  if (/cloud.189.cn/.test(link)) {
+  if (isTyLink(link)) {
     const vodFromUrl = await _detail(link);
     if (vodFromUrl){
       vod.vod_play_from = vodFromUrl.froms;

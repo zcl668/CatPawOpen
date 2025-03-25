@@ -4,6 +4,7 @@ import { IOS_UA, findBestLCS, delay} from './misc.js';
 import req from './req.js';
 import * as HLS from 'hls-parser';
 import {videosHandle} from "./utils.js";
+import {isAliLink} from "./linkDetect.js";
 
 // https://www.alipan.com/s/8stgXuDFsLy
 export function getShareData(url) {
@@ -371,7 +372,7 @@ export async function getDownload(shareId, fileId) {
 }
 
 export async function detail(shareUrl) {
-    if (/www.alipan.com|www.aliyundrive.com/.test(shareUrl)) {
+    if (isAliLink(shareUrl)) {
         const shareData = getShareData(shareUrl);
         if (shareData) {
             let videos = await getFilesByShareUrl(shareData);
