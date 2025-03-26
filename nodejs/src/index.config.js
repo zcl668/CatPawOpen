@@ -20,6 +20,9 @@ export default {
     wogg: {
         url: '',
     },
+    leijing: {
+        url: '',
+    },
     tgsou: {
         tgPic: false,
         count: 0,

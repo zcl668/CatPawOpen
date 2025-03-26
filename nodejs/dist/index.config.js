@@ -44,6 +44,9 @@ var index_config_default = {
   wogg: {
     url: ""
   },
+  leijing: {
+    url: ""
+  },
   tgsou: {
     tgPic: false,
     count: 0,

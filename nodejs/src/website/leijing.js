@@ -1,7 +1,7 @@
 export const getCache = async (server) => {
   const obj = await server.db.getObjectDefault(`/leijing`, {})
   // 优先级：缓存->配置文件->兜底域名
-  return obj?.url || server.config.wogg.url || 'https://leijing.xyz'
+  return obj?.url || server.config.leijing.url || 'https://leijing.xyz'
 }
 
 export const setCache = async (server, value) => {
