@@ -2,7 +2,12 @@ import { init as _init ,detail as _detail ,proxy ,play } from '../../util/pan.js
 import axios from "axios";
 import {is115Link, is123Link, isAliLink, isQuarkLink, isTyLink, isUcLink, isYdLink} from "../../util/linkDetect.js";
 import * as cheerio from "cheerio";
-import {getHomeChannelUsernameCache, getChannelUsernameCache, getCountCache} from "../../website/tgchannel.js";
+import {
+  getHomeChannelUsernameCache,
+  getChannelUsernameCache,
+  getCountCache,
+  getUrlCache
+} from "../../website/tgchannel.js";
 
 function findImg(node) {
   const style = node.attr('style');
@@ -126,11 +131,12 @@ const channelEndIdMap = {}
 const channelCurrentIdMap = {}
 
 async function category(inReq) {
+  const url = await getUrlCache(inReq.server)
   const id = inReq.body.id;
   let page = inReq.body.page;
   if (!page) page = 1;
   try {
-    const data = await parseChannelHtml(`https://t.me/s/${id}${page > 1 ? `?before=${channelCurrentIdMap[id]}` : ''}`);
+    const data = await parseChannelHtml(`${url}/s/${id}${page > 1 ? `?before=${channelCurrentIdMap[id]}` : ''}`);
     channelCurrentIdMap[id] = getNumberId(data[0].id);
     if (page === 1) {
       channelEndIdMap[id] = getNumberId(data[data.length - 1].id);
@@ -160,10 +166,11 @@ async function category(inReq) {
 }
 
 async function detail(inReq, _outResp) {
+  const url = await getUrlCache(inReq.server)
   const ids = !Array.isArray(inReq.body.id) ? [inReq.body.id] : inReq.body.id;
   const videos = [];
   for (const id of ids) {
-    const data = await parseMessageHtml(`https://t.me/${id}`);
+    const data = await parseMessageHtml(`${url}/${id}`);
     let links = data.links
     if (!links.length && data.tgMsgLink) {
       const tgMsgInfo = await parseMessageHtml(data.tgMsgLink)
@@ -196,7 +203,8 @@ async function search(inReq, _outResp) {
     return category({
       body: {
         id: `${channel}?q=${encodeURIComponent(wd)}`
-      }
+      },
+      server: inReq.server
     })
   }))
   const rs = []

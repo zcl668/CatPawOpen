@@ -4,6 +4,10 @@ const getCache = async (server, key, defaultValue) => {
   return obj?.[key] || server.config.tgchannel[key] || defaultValue
 }
 
+export const getUrlCache = (server) => {
+  return getCache(server, 'url', 'https://t.me')
+}
+
 export const getCountCache = (server) => {
   return getCache(server, 'count', 4)
 }
@@ -22,12 +26,14 @@ export const setCache = async (server, key, value) => {
 
 export default async function tgchannel(fastify) {
   fastify.get('/config', async (req, res) => {
+    const url = await getUrlCache(req.server)
     const count = await getCountCache(req.server)
     const channelUsername = await getChannelUsernameCache(req.server)
     const homeChannelUsername = await getHomeChannelUsernameCache(req.server)
     res.send({
       code: 0,
       data: {
+        url,
         count: Number(count),
         channelUsername: channelUsername.split(','),
         homeChannelUsername: homeChannelUsername.split(','),
@@ -36,6 +42,7 @@ export default async function tgchannel(fastify) {
   })
 
   fastify.put('/config', async (req, res) => {
+    await setCache(req.server, 'url', req.body.url)
     await setCache(req.server, 'count', req.body.count)
     await setCache(req.server, 'channelUsername', req.body.channelUsername.join(','))
     await setCache(req.server, 'homeChannelUsername', req.body.homeChannelUsername.join(','))

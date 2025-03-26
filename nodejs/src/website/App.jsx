@@ -362,6 +362,22 @@ function TGChannel() {
 
   return (
     <Form form={form} {...formItemLayout}>
+      <Form.Item
+        label={"TG域名"}
+        name="url"
+        rules={[
+          {required: true, message: "请输入TG域名"}
+        ]}
+        extra={
+        <div>
+          需完整代理t.me域名，至少需要支持以下链接
+          <p style={{margin: 0}}>1. 频道页面：https://t.me/s/xx，并且会带分页参数before=yy、搜索参数q=zz</p>
+          <p style={{margin: 0}}>2. 消息详情页：https://t.me/xx/yy</p>
+        </div>
+        }
+      >
+        <Input style={{ width: '60%' }}/>
+      </Form.Item>
       <h3>首页</h3>
       <Form.List
         name="homeChannelUsername"
@@ -566,12 +582,7 @@ function Sites() {
             />
           )
         },
-        width: 100
-      },
-      {
-        title: '操作',
-        dataIndex: 'operate',
-        width: 100,
+        width: 120
       },
     ]
   }, [dataSource]);
