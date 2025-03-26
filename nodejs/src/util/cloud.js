@@ -321,7 +321,7 @@ class CloudDrive {
         method: 'GET',
         headers: headers
       };
-      let resp = await _fetch(`${this.api}/open/share/listShareDir.action?key=noCache&pageNum=1&pageSize=60&fileId=${fileId}&shareDirFileId=${fileId}&isFolder=${this.isFolder}&shareId=${this.shareId}&shareMode=${this.shareMode}&iconOption=5&orderBy=lastOpTime&descending=true&accessCode=${this.accessCode}&noCache=${Math.random()}`, options)
+      let resp = await _fetch(`${this.api}/open/share/listShareDir.action?key=noCache&pageNum=1&pageSize=9999&fileId=${fileId}&shareDirFileId=${fileId}&isFolder=${this.isFolder}&shareId=${this.shareId}&shareMode=${this.shareMode}&iconOption=5&orderBy=lastOpTime&descending=true&accessCode=${this.accessCode}&noCache=${Math.random()}`, options)
       let json = JsonBig.parse(await resp.text());
       const data = json?.fileListAO;
       let folderList = data?.folderList
@@ -357,7 +357,7 @@ class CloudDrive {
         method: 'GET',
         headers: headers
       };
-      let resp = await _fetch(`${this.api}/open/share/listShareDir.action?key=noCache&pageNum=1&pageSize=60&fileId=${fileId}&shareDirFileId=${fileId}&isFolder=${this.isFolder}&shareId=${this.shareId}&shareMode=${this.shareMode}&iconOption=5&orderBy=lastOpTime&descending=true&accessCode=${this.accessCode}&noCache=${Math.random()}`, options)
+      let resp = await _fetch(`${this.api}/open/share/listShareDir.action?key=noCache&pageNum=1&pageSize=9999&fileId=${fileId}&shareDirFileId=${fileId}&isFolder=${this.isFolder}&shareId=${this.shareId}&shareMode=${this.shareMode}&iconOption=5&orderBy=lastOpTime&descending=true&accessCode=${this.accessCode}&noCache=${Math.random()}`, options)
       let json = JsonBig.parse(await resp.text());
       let videos = []
       const data = json?.fileListAO;
