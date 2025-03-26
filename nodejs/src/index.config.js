@@ -27,6 +27,9 @@ export default {
         channelUsername: '',
     },
     tgchannel: {},
+    sites: {
+        list: []
+    },
     alist: [
         {
             name: '🐉神族九帝',

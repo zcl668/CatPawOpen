@@ -8,6 +8,7 @@ import zhizhen from "./spider/video/zhizhen.js";
 import tgsou from "./spider/video/tgsou.js";
 import tgchannel from "./spider/video/tgchannel.js";
 import douban from "./spider/video/douban.js";
+import {getCache} from "./website/sites.js";
 
 const spiders = [douban, duoduo, mogg, leijing, panta, wogg, zhizhen, tgchannel, tgsou, baseset];
 const spiderPrefix = '/spider';
@@ -45,6 +46,44 @@ export default async function router(fastify) {
                     reply.send({ run: !fastify.stop });
                 }
             );
+            const getConfig = () => {
+                const config = {
+                    video: {
+                        sites: [],
+                    },
+                    read: {
+                        sites: [],
+                    },
+                    comic: {
+                        sites: [],
+                    },
+                    music: {
+                        sites: [],
+                    },
+                    pan: {
+                        sites: [],
+                    },
+                    color: fastify.config.color || [],
+                };
+                spiders.forEach((spider) => {
+                    let meta = Object.assign({}, spider.meta);
+                    meta.api = spiderPrefix + '/' + meta.key + '/' + meta.type;
+                    meta.key = 'nodejs_' + meta.key;
+                    const stype = spider.meta.type;
+                    if (stype < 10) {
+                        config.video.sites.push(meta);
+                    } else if (stype >= 10 && stype < 20) {
+                        config.read.sites.push(meta);
+                    } else if (stype >= 20 && stype < 30) {
+                        config.comic.sites.push(meta);
+                    } else if (stype >= 30 && stype < 40) {
+                        config.music.sites.push(meta);
+                    } else if (stype >= 40 && stype < 50) {
+                        config.pan.sites.push(meta);
+                    }
+                });
+                return config
+            }
             fastify.get(
                 '/config',
                 /**
@@ -53,44 +92,38 @@ export default async function router(fastify) {
                  * @param {import('fastify').FastifyReply} reply
                  */
                 async function (_request, reply) {
-                    const config = {
-                        video: {
-                            sites: [],
-                        },
-                        read: {
-                            sites: [],
-                        },
-                        comic: {
-                            sites: [],
-                        },
-                        music: {
-                            sites: [],
-                        },
-                        pan: {
-                            sites: [],
-                        },
-                        color: fastify.config.color || [],
-                    };
-                    spiders.forEach((spider) => {
-                        let meta = Object.assign({}, spider.meta);
-                        meta.api = spiderPrefix + '/' + meta.key + '/' + meta.type;
-                        meta.key = 'nodejs_' + meta.key;
-                        const stype = spider.meta.type;
-                        if (stype < 10) {
-                            config.video.sites.push(meta);
-                        } else if (stype >= 10 && stype < 20) {
-                            config.read.sites.push(meta);
-                        } else if (stype >= 20 && stype < 30) {
-                            config.comic.sites.push(meta);
-                        } else if (stype >= 30 && stype < 40) {
-                            config.music.sites.push(meta);
-                        } else if (stype >= 40 && stype < 50) {
-                            config.pan.sites.push(meta);
+                    const config = getConfig()
+                    const sites = await getCache(_request.server)
+
+                    const allSites = config.video.sites
+                    const visitedMap = {}
+                    const allSitesMap = {}
+                    allSites.forEach(site => {
+                        allSitesMap[site.key] = site
+                    })
+                    // 旧的取出来 过滤掉已失效的
+                    const rs =[]
+                    sites.forEach(site => {
+                        visitedMap[site.key] = true
+                        if (allSitesMap[site.key] && site.enable) {
+                            rs.push(allSitesMap[site.key])
                         }
-                    });
+                    })
+                    // 如果有新的站源 则追加到后面 默认启用
+                    allSites.forEach(site => {
+                        if (!visitedMap[site.key]) {
+                            rs.push(site)
+                        }
+                    })
+                    config.video.sites = rs
+
                     reply.send(config);
                 }
             );
+            fastify.get('/full-config', (_, reply) => {
+                const config = getConfig()
+                reply.send(config);
+            })
         }
     );
 }

@@ -1,9 +1,33 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import { createRoot } from 'react-dom/client';
-import {Button, Card, Form, Input, Tabs, message, Divider, Space, InputNumber, Row, Col, Switch, Alert} from 'antd';
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  Tabs,
+  message,
+  Divider,
+  Space,
+  InputNumber,
+  Row,
+  Col,
+  Switch,
+  Alert,
+  Table
+} from 'antd';
 import axios from 'axios'
 import copy from 'copy-to-clipboard';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import './App.less'
 import refreshImg from './assets/qrcode_refresh.jpg'
 
@@ -499,10 +523,163 @@ function UCUt() {
   )
 }
 
+const TableRow = (props) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: props['data-row-key'],
+  });
+
+  const style = {
+    ...props.style,
+    transform: CSS.Translate.toString(transform),
+    transition,
+    cursor: 'move',
+    ...(isDragging ? { position: 'relative', zIndex: 9999 } : {}),
+  };
+
+  return <tr {...props} ref={setNodeRef} style={style} {...attributes} {...listeners} />;
+};
+
+function Sites() {
+  const [dataSource, setDataSource] = useState([])
+  const columns = useMemo(() => {
+    return [
+      {
+        title: '站源',
+        dataIndex: 'key',
+        render(value, record) {
+          return record.name
+        }
+      },
+      {
+        title: '是否启用',
+        dataIndex: 'enable',
+        render(value, record, index) {
+          return (
+            <Switch
+              value={value}
+              onChange={(checked) => {
+                dataSource[index].enable = checked
+                setDataSource([
+                  ...dataSource
+                ])
+              }}
+            />
+          )
+        },
+        width: 100
+      },
+      {
+        title: '操作',
+        dataIndex: 'operate',
+        width: 100,
+      },
+    ]
+  }, [dataSource]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        // https://docs.dndkit.com/api-documentation/sensors/pointer#activation-constraints
+        distance: 1,
+      },
+    }),
+  );
+
+  const onDragEnd = ({ active, over }) => {
+    if (active.id !== over?.id) {
+      setDataSource((prev) => {
+        const activeIndex = prev.findIndex((i) => i.key === active.id);
+        const overIndex = prev.findIndex((i) => i.key === over?.id);
+        return arrayMove(prev, activeIndex, overIndex);
+      });
+    }
+  };
+
+  const init = async () => {
+    const fullConfig = await axios.get('/full-config')
+    const allSites = fullConfig.data.video.sites
+
+    const sites = await http.get('/sites/list')
+
+    const visitedMap = {}
+    const allSitesMap = {}
+    allSites.forEach(site => {
+      allSitesMap[site.key] = site
+    })
+    // 旧的取出来 过滤掉已失效的
+    const rs = sites.filter(site => {
+      visitedMap[site.key] = true
+      return allSitesMap[site.key]
+    })
+    // 如果有新的站源 则追加到后面 默认启用
+    allSites.forEach(site => {
+      if (!visitedMap[site.key]) {
+        rs.push({
+          key: site.key,
+          name: site.name,
+          enable: true,
+        })
+      }
+    })
+    console.log('dataSource', rs, sites, allSites)
+    setDataSource(rs)
+  }
+
+  const save = async () => {
+    try {
+      await http.put('/sites/list', {
+        list: dataSource
+      })
+      message.success('设置成功')
+    } catch (e) {
+      console.error(e);
+      message.error(`设置失败：${e?.message}`)
+    }
+  }
+
+  const reset = async () => {
+    try {
+      await http.delete('/sites/list')
+      init()
+      message.success('重置成功')
+    } catch (e) {
+      console.error(e);
+      message.error(`重置失败：${e?.message}`)
+    }
+  }
+
+  useEffect(() => {
+    init()
+  }, []);
+
+  return (
+    <div>
+      <DndContext sensors={sensors} modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
+        <SortableContext
+          items={dataSource.map((i) => i.key)}
+          strategy={verticalListSortingStrategy}
+        >
+          <Table
+            components={{
+            body: { row: TableRow },
+          }}
+            rowKey="key"
+            columns={columns}
+            dataSource={dataSource}
+            pagination={false}
+          />
+        </SortableContext>
+      </DndContext>
+      <Button type="primary" style={{marginTop: 16}} onClick={save}>保存</Button>
+      <Button danger style={{marginTop: 16, marginLeft: 16}} onClick={reset}>重置</Button>
+    </div>
+  )
+}
+
 function App() {
   return (
     <div className={'container'}>
-      <Card style={{ height: 600, width: 600 }}>
+      <Card style={{ minHeight: 600, maxHeight: '100vh', width: 600 }}>
         <Tabs type="card">
           <TabPane tab="登录信息" key="account">
             <Tabs>
@@ -546,6 +723,9 @@ function App() {
           </TabPane>
           <TabPane tab="站源设置" key="site">
             <Tabs>
+              <TabPane tab="站源列表" key="sites">
+                <Sites/>
+              </TabPane>
               <TabPane tab="木偶域名" key="muou">
                 <SiteDomainSetting api={'/muou/url'} name="木偶"/>
               </TabPane>
