@@ -27,7 +27,19 @@ function replaceTitle(text) {
   return text?.trim()
 }
 
-function findPanLinks(text) {
+function findPanLinksFromNodes(nodes) {
+  const rs = []
+  const validators = [isAliLink, isQuarkLink, isUcLink, isTyLink, isYdLink, is123Link, is115Link]
+  for(let node of nodes) {
+    const link = node.attribs?.href
+    if (validators.some(validator => validator(link))) {
+      rs.push(link)
+    }
+  }
+  return rs;
+}
+
+function findPanLinksFromText(text) {
   const rs = []
   const validators = [isAliLink, isQuarkLink, isUcLink, isTyLink, isYdLink, is123Link, is115Link]
   const links = text.match(/https?:\/\/[^\s]+/gi)
@@ -41,13 +53,11 @@ function findPanLinks(text) {
   return rs;
 }
 
-function findTgMsgLink(text) {
-  const links = text.match(/https?:\/\/[^\s]+/gi)
-  if (links) {
-    for (let link of links) {
-      if (isTgLink(link)) {
-        return link
-      }
+function findTgMsgLink(nodes) {
+  for(let node of nodes) {
+    const link = node.attribs?.href
+    if (isTgLink(link)) {
+      return link
     }
   }
 }
@@ -62,24 +72,27 @@ async function parseChannelHtml(channelLink) {
   const blocks = $('.tgme_widget_message')
   const rs = []
   for(let block of blocks){
-    const id = block.attribs['data-post']
+    const messageId = block.attribs['data-post']
     const cover = findImg($(block).find('.tgme_widget_message_photo_wrap'))
     const text = $(block).find('.tgme_widget_message_text').text()
     const title = replaceTitle(text)
     const description = text
-    const links = findPanLinks(text)
-    let tgMsgLink
+    const links = findPanLinksFromNodes($(block).find('.tgme_widget_message_text a'))
+    const panLinks = [...links]
     if (!links.length) {
-      tgMsgLink = findTgMsgLink($(block).find('.tgme_widget_message_text a').text())
+      const tgMsgLink = findTgMsgLink($(block).find('.tgme_widget_message_text a'))
+      if (tgMsgLink) {
+        links.push(tgMsgLink)
+      }
     }
-    if (cover && (links.length > 0 || tgMsgLink)) {
+    if (links.length) {
       rs.push({
-        id,
+        id: links.join('|'),
         title,
         description,
         cover,
-        links,
-        tgMsgLink
+        messageId: Number(messageId.split('/')[1]),
+        panLinks
       })
     }
   }
@@ -94,20 +107,14 @@ async function parseMessageHtml(msgLink) {
   const cover = $('meta[property="og:image"]').attr('content')
   const title = replaceTitle($('meta[property="og:description"]').attr('content'))
   const description = $('meta[property="og:description"]').attr('content')
-  const links = findPanLinks($('meta[property="og:description"]').attr('content'))
-  const tgMsgLink = findTgMsgLink($('meta[property="og:description"]').attr('content'))
+  const links = findPanLinksFromText($('meta[property="og:description"]').attr('content'))
 
   return {
     title,
     description,
     cover,
     links,
-    tgMsgLink,
   }
-}
-
-function getNumberId(id) {
-  return Number(id.split('/')[1])
 }
 
 async function init(inReq, _outResp) {
@@ -137,9 +144,9 @@ async function category(inReq) {
   if (!page) page = 1;
   try {
     const data = await parseChannelHtml(`${url}/s/${id}${page > 1 ? `?before=${channelCurrentIdMap[id]}` : ''}`);
-    channelCurrentIdMap[id] = getNumberId(data[0].id);
+    channelCurrentIdMap[id] = data[0].messageId;
     if (page === 1) {
-      channelEndIdMap[id] = getNumberId(data[data.length - 1].id);
+      channelEndIdMap[id] = data[data.length - 1].messageId;
     }
     data.reverse()
     const videos = data.map((item) => {
@@ -170,18 +177,14 @@ async function detail(inReq, _outResp) {
   const ids = !Array.isArray(inReq.body.id) ? [inReq.body.id] : inReq.body.id;
   const videos = [];
   for (const id of ids) {
-    const data = await parseMessageHtml(`${url}/${id}`);
-    let links = data.links
-    if (!links.length && data.tgMsgLink) {
-      const tgMsgInfo = await parseMessageHtml(data.tgMsgLink)
-      links = tgMsgInfo.links
+    let links = id.split('|')
+    if (links.length === 1 && isTgLink(links[0])) {
+      const data = await parseMessageHtml(id.replace('https://t.me', url));
+      links = data.links
     }
     const vodFromUrl = await _detail(links);
     const vod = {
       vod_id: id,
-      vod_name: data.title,
-      vod_pic: data.cover,
-      vod_content: data.description,
     }
     if (vodFromUrl){
       vod.vod_play_from = vodFromUrl.froms;
@@ -218,9 +221,9 @@ async function search(inReq, _outResp) {
     {name: '123', validator: is123Link, pic: 'https://statics.123957.com/static/favicon.ico'},
   ]
   data.forEach((channelData, index) => {
-    channelData.list.filter(item => item.rawData.links.length).slice(0, count).forEach(item => {
+    channelData.list.filter(item => item.rawData.panLinks.length).slice(0, count).forEach(item => {
       let remark = ''
-      item.rawData.links.forEach(link => {
+      item.rawData.panLinks.forEach(link => {
         const panInfo = panInfos.find(pan => pan.validator(link));
         if (panInfo) {
           remark += remark ? `|${panInfo.name}` : panInfo.name;

@@ -18,7 +18,7 @@ import {
 } from 'antd';
 import axios from 'axios'
 import copy from 'copy-to-clipboard';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { MinusCircleOutlined, PlusOutlined, UpOutlined, DownOutlined } from '@ant-design/icons';
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import {
@@ -580,6 +580,34 @@ function Sites() {
                 ])
               }}
             />
+          )
+        },
+        width: 120
+      },
+      {
+        title: '操作',
+        dataIndex: 'op',
+        render(value, record, index) {
+          return (
+            <>
+              <Button
+                icon={<UpOutlined />}
+                style={{marginRight: 8}}
+                onClick={() => {
+                  setDataSource((prev) => {
+                    return arrayMove(prev, index, index - 1);
+                  });
+                }}
+              />
+              <Button
+                icon={<DownOutlined />}
+                onClick={() => {
+                  setDataSource((prev) => {
+                    return arrayMove(prev, index, index + 1);
+                  });
+                }}
+              />
+            </>
           )
         },
         width: 120
