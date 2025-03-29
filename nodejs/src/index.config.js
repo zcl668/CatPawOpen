@@ -7,7 +7,7 @@ export default {
         cookie: ''
     },
     uc: {
-        cookie: '',
+        cookie: 'cookie',
         token: 'token',
         ut: 'ut'
     },
