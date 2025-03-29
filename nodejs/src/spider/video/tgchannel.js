@@ -23,7 +23,8 @@ function replaceTitle(text) {
   text = text.split(/名称[：|:]/)?.[1] || text;
   text = text.split(/\(|（/)?.[0] || text;
   text = text.split('\n')?.[0] || text;
-  text = text.split(' ')[0]
+  text = text.split(' ').slice(0, 2).join(' ')
+  text = text.split(/，|,/)?.[0]
   return text?.trim()
 }
 
@@ -74,6 +75,7 @@ async function parseChannelHtml(channelLink) {
   for(let block of blocks){
     const messageId = block.attribs['data-post']
     const cover = findImg($(block).find('.tgme_widget_message_photo_wrap'))
+    $('br').replaceWith('\n')
     const text = $(block).find('.tgme_widget_message_text').text()
     const title = replaceTitle(text)
     const description = text

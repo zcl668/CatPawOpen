@@ -31,7 +31,7 @@ var index_config_default = {
     cookie: ""
   },
   uc: {
-    cookie: "",
+    cookie: "cookie",
     token: "token",
     ut: "ut"
   },
