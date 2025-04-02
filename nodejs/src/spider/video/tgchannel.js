@@ -67,7 +67,10 @@ const isTgLink = (shareUrl) => /t.me\/.*\/.*/.test(shareUrl)
 
 async function parseChannelHtml(channelLink) {
   const response = await axios.get(channelLink, {
-    timeout: 5000
+    timeout: 5000,
+    headers: {
+      'User-Agent': 'MoZhao'
+    }
   })
   const $ = cheerio.load(response.data);
   const blocks = $('.tgme_widget_message')
@@ -103,7 +106,10 @@ async function parseChannelHtml(channelLink) {
 
 async function parseMessageHtml(msgLink) {
   const response = await axios.get(msgLink, {
-    timeout: 5000
+    timeout: 5000,
+    headers: {
+      'User-Agent': 'MoZhao'
+    }
   })
   const $ = cheerio.load(response.data);
   const cover = $('meta[property="og:image"]').attr('content')
