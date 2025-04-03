@@ -3,6 +3,8 @@ import fs from 'fs';
 import { createHash } from 'crypto';
 import {getWebsiteBundle} from "./esbuild-website.js";
 
+const isDev = process.env.NODE_ENV === 'development'
+
 esbuild.build({
     entryPoints: ['src/index.js'],
     outfile: 'dist/index.js',
@@ -12,8 +14,8 @@ esbuild.build({
     format: 'cjs',
     platform: 'node',
     target: 'node18',
-    sourcemap: process.env.NODE_ENV === 'development' ? 'inline' : false,
-    plugins: [addWebsite(), genMd5()],
+    sourcemap: isDev ? 'inline' : false,
+    plugins: isDev ? [genMd5()] : [addWebsite(), genMd5()],
 });
 
 function addWebsite() {
