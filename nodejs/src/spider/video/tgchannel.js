@@ -65,6 +65,19 @@ function findTgMsgLink(nodes) {
 
 const isTgLink = (shareUrl) => /t.me\/.*\/.*/.test(shareUrl)
 
+const getPanInfo = (link) => {
+  const panInfos = [
+    {name: '逸动', validator: isYdLink, 'pic': 'https://yun.139.com/w/static/img/LOGO.png'},
+    {name: '天意', validator: isTyLink, pic: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/a8/fa/f0/a8faf032-0fa4-d9c5-ac70-920d9c84dff1/AppIcon-0-0-1x_U007emarketing-0-7-0-0-sRGB-85-220.png/350x350.png'},
+    {name: '115', validator: is115Link, pic: 'https://img.pcsoft.com.cn/soft/202104/093230-608b5e2ed5912.jpg'},
+    {name: '夸父', validator: isQuarkLink, pic: 'https://ts1.cn.mm.bing.net/th/id/R-C.a0d60e6a72806738e6f0b711a979bdf5?rik=lp5C9t5sYlkrLw&riu=http%3a%2f%2fpic.2265.com%2fupload%2f2020-10%2f202010151719492792.png&ehk=Pv6rq3JxJvKe2y1QsdzssyZ4Ez4cwiKWmIvK0aMgxi0%3d&risl=&pid=ImgRaw&r=0'},
+    {name: '优夕', validator: isUcLink, pic: 'https://ts1.cn.mm.bing.net/th/id/R-C.421c96e47df7c9719403654ee4f7c281?rik=yiiEoGCTgDDc3w&riu=http%3a%2f%2fpic.9663.com%2fupload%2f2023-5%2f20235111411256277.png&ehk=R81N%2flXMrl%2bxpRlST8DtHXDfab6rzaMb83gihuD71Fk%3d&risl=&pid=ImgRaw&r=0'},
+    {name: '阿狸', validator: isAliLink, pic: 'https://inews.gtimg.com/newsapp_bt/0/13263837859/1000'},
+    {name: '123', validator: is123Link, pic: 'https://statics.123957.com/static/favicon.ico'},
+  ]
+  return panInfos.find(pan => pan.validator(link))
+};
+
 async function parseChannelHtml(channelLink) {
   const response = await axios.get(channelLink, {
     timeout: 5000,
@@ -158,10 +171,18 @@ async function category(inReq) {
     }
     data.reverse()
     const videos = data.map((item) => {
+      let defaultImg
+      if (item.panLinks.length) {
+        const panInfo = getPanInfo(item.panLinks[0]);
+        defaultImg = panInfo?.pic
+      }
+      if (!defaultImg) {
+        defaultImg = 'https://telegram.org/img/apple-touch-icon.png'
+      }
       return {
         vod_name: item.title,
         vod_id: item.id,
-        vod_pic: item.cover,
+        vod_pic: item.cover || defaultImg,
         rawData: item,
       }
     })
@@ -219,28 +240,23 @@ async function search(inReq, _outResp) {
     })
   }))
   const rs = []
-  const panInfos = [
-    {name: '逸动', validator: isYdLink, 'pic': 'https://yun.139.com/w/static/img/LOGO.png'},
-    {name: '天意', validator: isTyLink, pic: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/a8/fa/f0/a8faf032-0fa4-d9c5-ac70-920d9c84dff1/AppIcon-0-0-1x_U007emarketing-0-7-0-0-sRGB-85-220.png/350x350.png'},
-    {name: '115', validator: is115Link, pic: 'https://img.pcsoft.com.cn/soft/202104/093230-608b5e2ed5912.jpg'},
-    {name: '夸父', validator: isQuarkLink, pic: 'https://ts1.cn.mm.bing.net/th/id/R-C.a0d60e6a72806738e6f0b711a979bdf5?rik=lp5C9t5sYlkrLw&riu=http%3a%2f%2fpic.2265.com%2fupload%2f2020-10%2f202010151719492792.png&ehk=Pv6rq3JxJvKe2y1QsdzssyZ4Ez4cwiKWmIvK0aMgxi0%3d&risl=&pid=ImgRaw&r=0'},
-    {name: '优夕', validator: isUcLink, pic: 'https://ts1.cn.mm.bing.net/th/id/R-C.421c96e47df7c9719403654ee4f7c281?rik=yiiEoGCTgDDc3w&riu=http%3a%2f%2fpic.9663.com%2fupload%2f2023-5%2f20235111411256277.png&ehk=R81N%2flXMrl%2bxpRlST8DtHXDfab6rzaMb83gihuD71Fk%3d&risl=&pid=ImgRaw&r=0'},
-    {name: '阿狸', validator: isAliLink, pic: 'https://inews.gtimg.com/newsapp_bt/0/13263837859/1000'},
-    {name: '123', validator: is123Link, pic: 'https://statics.123957.com/static/favicon.ico'},
-  ]
   data.forEach((channelData, index) => {
     channelData.list.filter(item => item.rawData.panLinks.length).slice(0, count).forEach(item => {
       let remark = ''
+      let defaultImg
       item.rawData.panLinks.forEach(link => {
         const panInfo = panInfos.find(pan => pan.validator(link));
         if (panInfo) {
           remark += remark ? `|${panInfo.name}` : panInfo.name;
         }
+        if (!defaultImg) {
+          defaultImg = panInfo.pic
+        }
       })
       rs.push({
         vod_id: item.vod_id,
         vod_name: item.vod_name,
-        vod_pic: item.vod_pic,
+        vod_pic: item.vod_pic || defaultImg,
         vod_remarks: `${remark}:${channels[index]}`,
       })
     })
