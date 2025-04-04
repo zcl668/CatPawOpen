@@ -245,7 +245,7 @@ async function search(inReq, _outResp) {
       let remark = ''
       let defaultImg
       item.rawData.panLinks.forEach(link => {
-        const panInfo = panInfos.find(pan => pan.validator(link));
+        const panInfo = getPanInfo(link);
         if (panInfo) {
           remark += remark ? `|${panInfo.name}` : panInfo.name;
         }
