@@ -4,6 +4,7 @@ import { JsonDB, Config } from 'node-json-db';
 import axios from 'axios';
 import website from "./website/index.js";
 import {getIPAddress} from "./util/network.js";
+import {getCache as getPansCache} from "./website/pans.js";
 
 let server = null;
 
@@ -61,6 +62,9 @@ export async function start(config) {
     server.db = new JsonDB(new Config((process.env['NODE_PATH'] || '.') + '/db.json', true, true, '/', true));
     server.register(router);
     server.register(website, { prefix: '/website' });
+    globalThis.Pans = await getPansCache(server)
+    globalThis.getPanName = (key) => globalThis.Pans.find(pan => pan.key === key)?.name
+    globalThis.getPanEnabled = (key) => globalThis.Pans.find(pan => pan.key === key)?.enable
     const startServer = (port) => {
         server.listen({ port: process.env['DEV_HTTP_PORT'] || port, host: '0.0.0.0' }, (err, address) => {
             if (err) {

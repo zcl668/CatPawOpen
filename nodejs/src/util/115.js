@@ -220,7 +220,7 @@ export async function detail(shareUrl) {
         vod_size: v.s,
       }
     })
-    return videosHandle('115-' + shareData.shareCode, videos)
+    return videosHandle(getPanName('115') + '-' + shareData.shareCode, videos)
   } else {
     return {}
   }

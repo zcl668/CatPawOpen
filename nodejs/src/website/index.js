@@ -11,6 +11,7 @@ import pan123 from "./pan123.js";
 import ali from "./ali.js";
 import tgchannel from "./tgchannel.js";
 import sites from "./sites.js";
+import pans from "./pans.js";
 
 export default async function website(fastify) {
   fastify.get('/', (req, res) => {
@@ -42,4 +43,5 @@ export default async function website(fastify) {
   fastify.register(ali, {prefix: '/ali'})
   fastify.register(tgchannel, {prefix: '/tgchannel'})
   fastify.register(sites, {prefix: '/sites'})
+  fastify.register(pans, {prefix: '/pans'})
 }

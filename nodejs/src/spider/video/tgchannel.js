@@ -1,4 +1,4 @@
-import { init as _init ,detail as _detail ,proxy ,play } from '../../util/pan.js';
+import {init as _init, detail as _detail, proxy, play, getPanInfos} from '../../util/pan.js';
 import axios from "axios";
 import {is115Link, is123Link, isAliLink, isQuarkLink, isTyLink, isUcLink, isYdLink} from "../../util/linkDetect.js";
 import * as cheerio from "cheerio";
@@ -30,10 +30,9 @@ function replaceTitle(text) {
 
 function findPanLinksFromNodes(nodes) {
   const rs = []
-  const validators = [isAliLink, isQuarkLink, isUcLink, isTyLink, isYdLink, is123Link, is115Link]
   for(let node of nodes) {
     const link = node.attribs?.href
-    if (validators.some(validator => validator(link))) {
+    if (getPanInfos().some(pan => pan.validator(link))) {
       rs.push(link)
     }
   }
@@ -42,11 +41,10 @@ function findPanLinksFromNodes(nodes) {
 
 function findPanLinksFromText(text) {
   const rs = []
-  const validators = [isAliLink, isQuarkLink, isUcLink, isTyLink, isYdLink, is123Link, is115Link]
   const links = text.match(/https?:\/\/[^\s]+/gi)
   if (links) {
     for(let link of links) {
-      if (validators.some(validator => validator(link))) {
+      if (getPanInfos().some(pan => pan.validator(link))) {
         rs.push(link)
       }
     }
@@ -66,16 +64,7 @@ function findTgMsgLink(nodes) {
 const isTgLink = (shareUrl) => /t.me\/.*\/.*/.test(shareUrl)
 
 const getPanInfo = (link) => {
-  const panInfos = [
-    {name: '逸动', validator: isYdLink, 'pic': 'https://yun.139.com/w/static/img/LOGO.png'},
-    {name: '天意', validator: isTyLink, pic: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/a8/fa/f0/a8faf032-0fa4-d9c5-ac70-920d9c84dff1/AppIcon-0-0-1x_U007emarketing-0-7-0-0-sRGB-85-220.png/350x350.png'},
-    {name: '115', validator: is115Link, pic: 'https://img.pcsoft.com.cn/soft/202104/093230-608b5e2ed5912.jpg'},
-    {name: '夸父', validator: isQuarkLink, pic: 'https://ts1.cn.mm.bing.net/th/id/R-C.a0d60e6a72806738e6f0b711a979bdf5?rik=lp5C9t5sYlkrLw&riu=http%3a%2f%2fpic.2265.com%2fupload%2f2020-10%2f202010151719492792.png&ehk=Pv6rq3JxJvKe2y1QsdzssyZ4Ez4cwiKWmIvK0aMgxi0%3d&risl=&pid=ImgRaw&r=0'},
-    {name: '优夕', validator: isUcLink, pic: 'https://ts1.cn.mm.bing.net/th/id/R-C.421c96e47df7c9719403654ee4f7c281?rik=yiiEoGCTgDDc3w&riu=http%3a%2f%2fpic.9663.com%2fupload%2f2023-5%2f20235111411256277.png&ehk=R81N%2flXMrl%2bxpRlST8DtHXDfab6rzaMb83gihuD71Fk%3d&risl=&pid=ImgRaw&r=0'},
-    {name: '阿狸', validator: isAliLink, pic: 'https://inews.gtimg.com/newsapp_bt/0/13263837859/1000'},
-    {name: '123', validator: is123Link, pic: 'https://statics.123957.com/static/favicon.ico'},
-  ]
-  return panInfos.find(pan => pan.validator(link))
+  return getPanInfos().find(pan => pan.validator(link))
 };
 
 async function parseChannelHtml(channelLink) {

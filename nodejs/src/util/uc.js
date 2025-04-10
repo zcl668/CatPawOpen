@@ -373,7 +373,7 @@ export async function detail(shareUrl) {
                     vod_size: v.size,
                 }
             })
-            return videosHandle('优夕-' + shareData.shareId, videos)
+            return videosHandle(getPanName('uc') + '-' + shareData.shareId, videos)
         } else {
             return {}
         }
@@ -432,7 +432,7 @@ export async function play(inReq, outResp) {
     const ids = id.split('*');
     await initUC(inReq)
     let idx = 0;
-    if (flag.startsWith('优夕')) {
+    if (flag.startsWith(getPanName('uc'))) {
         const transcoding = (await getLiveTranscoding(ids[0], ids[1], ids[2], ids[3])).filter((t) => t.accessable);
         ucTranscodingCache[ids[2]] = transcoding;
         const urls = [];

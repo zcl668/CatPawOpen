@@ -384,7 +384,7 @@ export async function detail(shareUrl) {
                     vod_size: v.size,
                 }
             })
-            return videosHandle('阿狸-' + shareData.shareId, videos)
+            return videosHandle(getPanName('ali') + '-' + shareData.shareId, videos)
         } else {
             return {}
         }
@@ -482,7 +482,7 @@ export async function play(inReq, outResp) {
     const id = inReq.body.id;
     const ids = id.split('*');
     let idx = 0;
-    if (flag.startsWith('阿狸')) {
+    if (flag.startsWith(getPanName('ali'))) {
         const transcoding = await getLiveTranscoding(ids[0], ids[1]);
         aliTranscodingCache[ids[1]] = transcoding;
         transcoding.sort((a, b) => b.template_width - a.template_width);

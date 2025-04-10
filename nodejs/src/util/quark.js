@@ -287,7 +287,7 @@ export async function detail(shareUrl) {
                     vod_size: v.size,
                 }
             })
-            return videosHandle('夸父-' + shareData.shareId, videos)
+            return videosHandle(getPanName('quark') + '-' + shareData.shareId, videos)
         } else {
             return {}
         }
@@ -346,7 +346,7 @@ export async function play(inReq, outResp) {
     const id = inReq.body.id;
     const ids = id.split('*');
     let idx = 0;
-    if (flag.startsWith('夸父')) {
+    if (flag.startsWith(getPanName('quark'))) {
         const transcoding = (await getLiveTranscoding(ids[0], ids[1], ids[2], ids[3])).filter((t) => t.accessable);
         quarkTranscodingCache[ids[2]] = transcoding;
         const urls = [];

@@ -57,6 +57,9 @@ var index_config_default = {
   sites: {
     list: []
   },
+  pans: {
+    list: []
+  },
   alist: [
     {
       name: "🐉神族九帝",

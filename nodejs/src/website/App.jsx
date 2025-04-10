@@ -715,6 +715,147 @@ function Sites() {
   )
 }
 
+function Pans() {
+  const [dataSource, setDataSource] = useState([])
+  const columns = useMemo(() => {
+    return [
+      {
+        title: '网盘',
+        dataIndex: 'key',
+        render(value, record, index) {
+          return <Input value={record.name} onChange={(e) => {
+            dataSource[index] = {
+              ...record,
+              name: e.target.value,
+            }
+            setDataSource([...dataSource])
+          }}/>
+        },
+      },
+      {
+        title: '是否启用',
+        dataIndex: 'enable',
+        render(value, record, index) {
+          return (
+            <Switch
+              value={value}
+              onChange={(checked) => {
+                dataSource[index].enable = checked
+                setDataSource([
+                  ...dataSource
+                ])
+              }}
+            />
+          )
+        },
+        width: 120
+      },
+      {
+        title: '操作',
+        dataIndex: 'op',
+        render(value, record, index) {
+          return (
+            <>
+              <Button
+                icon={<UpOutlined />}
+                style={{marginRight: 8}}
+                onClick={() => {
+                  setDataSource((prev) => {
+                    return arrayMove(prev, index, index - 1);
+                  });
+                }}
+              />
+              <Button
+                icon={<DownOutlined />}
+                onClick={() => {
+                  setDataSource((prev) => {
+                    return arrayMove(prev, index, index + 1);
+                  });
+                }}
+              />
+            </>
+          )
+        },
+        width: 120
+      },
+    ]
+  }, [dataSource]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        // https://docs.dndkit.com/api-documentation/sensors/pointer#activation-constraints
+        distance: 1,
+      },
+    }),
+  );
+
+  const onDragEnd = ({ active, over }) => {
+    if (active.id !== over?.id) {
+      setDataSource((prev) => {
+        const activeIndex = prev.findIndex((i) => i.key === active.id);
+        const overIndex = prev.findIndex((i) => i.key === over?.id);
+        return arrayMove(prev, activeIndex, overIndex);
+      });
+    }
+  };
+
+  const init = async () => {
+    const pans = await http.get('/pans/list')
+    setDataSource(pans)
+  }
+
+  const save = async () => {
+    try {
+      await http.put('/pans/list', {
+        list: dataSource
+      })
+      message.success('设置成功')
+    } catch (e) {
+      console.error(e);
+      message.error(`设置失败：${e?.message}`)
+    }
+  }
+
+  const reset = async () => {
+    try {
+      await http.delete('/pans/list')
+      init()
+      message.success('重置成功')
+    } catch (e) {
+      console.error(e);
+      message.error(`重置失败：${e?.message}`)
+    }
+  }
+
+  useEffect(() => {
+    init()
+  }, []);
+
+  return (
+    <div>
+      <DndContext sensors={sensors} modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
+        <SortableContext
+          items={dataSource.map((i) => i.key)}
+          strategy={verticalListSortingStrategy}
+        >
+          <Table
+            components={{
+              body: { row: TableRow },
+            }}
+            rowKey="key"
+            columns={columns}
+            dataSource={dataSource}
+            pagination={false}
+          />
+        </SortableContext>
+      </DndContext>
+      <Button type="primary" style={{marginTop: 16}} onClick={save}>保存</Button>
+      <Button danger style={{marginTop: 16, marginLeft: 16}} onClick={reset}>重置</Button>
+    </div>
+  )
+}
+
 function App() {
   return (
     <div className={'container'}>
@@ -779,6 +920,13 @@ function App() {
               </TabPane>
               <TabPane tab="TG搜" key="tgsou">
                 <TGSou/>
+              </TabPane>
+            </Tabs>
+          </TabPane>
+          <TabPane tab="通用设置" key="common">
+            <Tabs>
+              <TabPane tab="网盘列表" key="pans">
+                <Pans/>
               </TabPane>
             </Tabs>
           </TabPane>

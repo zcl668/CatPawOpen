@@ -17,71 +17,85 @@ export async function init(inReq, _outResp) {
 }
 
 export async function detail(shareUrls) {
-        shareUrls = !Array.isArray(shareUrls) ? [shareUrls] : shareUrls;
-        const froms = [];
-        const urls = [];
-        for (const shareUrl of shareUrls) {
-            if (isAliLink(shareUrl)) {
-                const data = await Ali.detail(shareUrl);
-                if(data && data.from && data.url){
-                    froms.push(data.from);
-                    urls.push(data.url);
-                }
-            } else if (isQuarkLink(shareUrl)) {
-                const data = await Quark.detail(shareUrl);
-                if(data && data.from && data.url){
-                    froms.push(data.from);
-                    urls.push(data.url);
-                }
-            } else if (isUcLink(shareUrl)) {
-                const data = await UC.detail(shareUrl);
-                if(data && data.from && data.url){
-                    froms.push(data.from);
-                    urls.push(data.url);
-                }
-            } else if (isTyLink(shareUrl)) {
-                const shareData = await Cloud.getShareData(shareUrl);
-                if(shareData) {
-                    Object.keys(shareData).forEach(it => {
-                        const data = videosHandle('天意-' + it, shareData[it])
-                        if(data && data.from && data.url){
-                            froms.push(data.from);
-                            urls.push(data.url);
-                        }
-                    })
-                }
-            } else if (isYdLink(shareUrl)) {
-                let shareData = await Yun.getShareData(shareUrl)
+    shareUrls = !Array.isArray(shareUrls) ? [shareUrls] : shareUrls;
+    const shareUrlsWithMoreInfo = shareUrls.map(url => {
+        const key = getPanInfos().find(pan => pan.validator(url))?.key
+        return {
+            key,
+            url,
+            order: globalThis.Pans.findIndex(pan => pan.key === key)
+        }
+    }).filter(item => item.key)
+    shareUrlsWithMoreInfo.sort((a, b) => a.order - b.order);
+    shareUrls = shareUrlsWithMoreInfo.map(item => item.url)
+
+    const froms = [];
+    const urls = [];
+    for (const shareUrl of shareUrls) {
+        if (isAliLink(shareUrl)) {
+            const data = await Ali.detail(shareUrl);
+            if(data && data.from && data.url){
+                froms.push(data.from);
+                urls.push(data.url);
+            }
+        } else if (isQuarkLink(shareUrl)) {
+            const data = await Quark.detail(shareUrl);
+            if(data && data.from && data.url){
+                froms.push(data.from);
+                urls.push(data.url);
+            }
+        } else if (isUcLink(shareUrl)) {
+            const data = await UC.detail(shareUrl);
+            if(data && data.from && data.url){
+                froms.push(data.from);
+                urls.push(data.url);
+            }
+        } else if (isTyLink(shareUrl)) {
+            const shareData = await Cloud.getShareData(shareUrl);
+            if(shareData) {
+                const panName = await getPanName('tianyi')
                 Object.keys(shareData).forEach(it => {
-                    const data = videosHandle('逸动-' + it, shareData[it])
+                    const data = videosHandle(panName + '-' + it, shareData[it])
                     if(data && data.from && data.url){
                         froms.push(data.from);
                         urls.push(data.url);
                     }
                 })
-            } else if(is123Link(shareUrl)) {
-                const shareData = await Pan.getShareData(shareUrl)
-                let files = await Pan.getFilesByShareUrl(shareData)
-                Object.keys(files).forEach(it => {
-                    const data = videosHandle('Pan123-' + it, files[it])
-                    if(data && data.from && data.url){
-                        froms.push(data.from);
-                        urls.push(data.url);
-                    }
-                })
-            } else if(is115Link(shareUrl)) {
-                const data = await Y115.detail(shareUrl);
+            }
+        } else if (isYdLink(shareUrl)) {
+            let shareData = await Yun.getShareData(shareUrl)
+            const panName = await getPanName('yidong')
+            Object.keys(shareData).forEach(it => {
+                const data = videosHandle(panName + '-' + it, shareData[it])
                 if(data && data.from && data.url){
                     froms.push(data.from);
                     urls.push(data.url);
                 }
+            })
+        } else if(is123Link(shareUrl)) {
+            const shareData = await Pan.getShareData(shareUrl)
+            let files = await Pan.getFilesByShareUrl(shareData)
+            const panName = await getPanName('123')
+            Object.keys(files).forEach(it => {
+                const data = videosHandle(panName + '-' + it, files[it])
+                if(data && data.from && data.url){
+                    froms.push(data.from);
+                    urls.push(data.url);
+                }
+            })
+        } else if(is115Link(shareUrl)) {
+            const data = await Y115.detail(shareUrl);
+            if(data && data.from && data.url){
+                froms.push(data.from);
+                urls.push(data.url);
             }
         }
+    }
 
-        return {
-            froms: froms.join('$$$'),
-            urls: urls.join('$$$')
-        };
+    return {
+        froms: froms.join('$$$'),
+        urls: urls.join('$$$')
+    };
 }
 
 export async function proxy(inReq, _outResp) {
@@ -97,13 +111,13 @@ export async function proxy(inReq, _outResp) {
 
 export async function play(inReq, _outResp) {
     const flag = inReq.body.flag;
-    if (flag.startsWith('阿狸')) {
+    if (flag.startsWith(await getPanName('ali'))) {
         return await Ali.play(inReq, _outResp);
-    } else if (flag.startsWith('夸父')) {
+    } else if (flag.startsWith(await getPanName('quark'))) {
         return await Quark.play(inReq, _outResp);
-    } else if (flag.startsWith('优夕')) {
+    } else if (flag.startsWith(await getPanName('uc'))) {
         return await UC.play(inReq, _outResp);
-    } else if (flag.startsWith('天意')) {
+    } else if (flag.startsWith(await getPanName('tianyi'))) {
         const ids = inReq.body.id.split('*');
         await initCloud(inReq)
         const url = await Cloud.getShareUrl(ids[0], ids[1]);
@@ -111,14 +125,14 @@ export async function play(inReq, _outResp) {
             parse: 0,
             url: ['原画', url],
         }
-    } else if (flag.startsWith('逸动')) {
+    } else if (flag.startsWith(await getPanName('yidong'))) {
         const ids = inReq.body.id.split('*');
         const url = await Yun.getSharePlay(ids[0], ids[1]);
         return {
             parse: 0,
             url: ['原画', url],
         }
-    } else if (flag.startsWith('Pan123')) {
+    } else if (flag.startsWith(await getPanName('123'))) {
         await initPan123Cloud(inReq)
         const ids = inReq.body.id.split('*');
         const url = await Pan.getDownload(...ids);
@@ -126,7 +140,7 @@ export async function play(inReq, _outResp) {
             parse: 0,
             url: ['原画', url],
         }
-    } else if (flag.startsWith('115')) {
+    } else if (flag.startsWith(await getPanName('115'))) {
         return await Y115.play(inReq, _outResp);
     }
 }
@@ -227,3 +241,13 @@ function printErr(json) {
         console.error(json);
     }
 }
+
+export const getPanInfos = () =>  [
+    {key: 'yidong', name: getPanName('yidong'), validator: isYdLink, 'pic': 'https://yun.139.com/w/static/img/LOGO.png'},
+    {key: 'tianyi', name: getPanName('tianyi'), validator: isTyLink, pic: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/a8/fa/f0/a8faf032-0fa4-d9c5-ac70-920d9c84dff1/AppIcon-0-0-1x_U007emarketing-0-7-0-0-sRGB-85-220.png/350x350.png'},
+    {key: '115', name: getPanName('115'), validator: is115Link, pic: 'https://img.pcsoft.com.cn/soft/202104/093230-608b5e2ed5912.jpg'},
+    {key: 'quark', name: getPanName('quark'), validator: isQuarkLink, pic: 'https://ts1.cn.mm.bing.net/th/id/R-C.a0d60e6a72806738e6f0b711a979bdf5?rik=lp5C9t5sYlkrLw&riu=http%3a%2f%2fpic.2265.com%2fupload%2f2020-10%2f202010151719492792.png&ehk=Pv6rq3JxJvKe2y1QsdzssyZ4Ez4cwiKWmIvK0aMgxi0%3d&risl=&pid=ImgRaw&r=0'},
+    {key: 'uc', name: getPanName('uc'), validator: isUcLink, pic: 'https://ts1.cn.mm.bing.net/th/id/R-C.421c96e47df7c9719403654ee4f7c281?rik=yiiEoGCTgDDc3w&riu=http%3a%2f%2fpic.9663.com%2fupload%2f2023-5%2f20235111411256277.png&ehk=R81N%2flXMrl%2bxpRlST8DtHXDfab6rzaMb83gihuD71Fk%3d&risl=&pid=ImgRaw&r=0'},
+    {key: 'ali', name: getPanName('ali'), validator: isAliLink, pic: 'https://inews.gtimg.com/newsapp_bt/0/13263837859/1000'},
+    {key: '123', name: getPanName('123'), validator: is123Link, pic: 'https://statics.123957.com/static/favicon.ico'},
+]
