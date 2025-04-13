@@ -5,18 +5,21 @@ import {getWebsiteBundle} from "./esbuild-website.js";
 
 const isDev = process.env.NODE_ENV === 'development'
 
-esbuild.build({
+let result = await esbuild.build({
     entryPoints: ['src/index.js'],
     outfile: 'dist/index.js',
     bundle: true,
     minify: true,
     write: true,
+    metafile: true,
     format: 'cjs',
     platform: 'node',
     target: 'node18',
     sourcemap: isDev ? 'inline' : false,
     plugins: isDev ? [genMd5()] : [addWebsite(), genMd5()],
 });
+
+fs.writeFileSync('meta.server.json', JSON.stringify(result.metafile))
 
 function addWebsite() {
     return {

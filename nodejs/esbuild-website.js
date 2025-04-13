@@ -1,6 +1,9 @@
 import * as esbuild from "esbuild";
 import fs from "fs";
 import less from "less";
+import * as ExternalGlobalPlugin from "esbuild-plugin-external-global";
+
+const {default: {externalGlobalPlugin}} = ExternalGlobalPlugin
 
 export const getWebsiteBundle = async () => {
   const clientResult = await esbuild.build({
@@ -8,6 +11,7 @@ export const getWebsiteBundle = async () => {
     bundle: true,
     minify: true,
     write: false,
+    metafile: true,
     format: 'cjs',
     target: ['chrome58', 'firefox57', 'safari11'],
     loader: {
@@ -19,33 +23,39 @@ export const getWebsiteBundle = async () => {
       '.svg': 'dataurl',
       '.webp': 'dataurl',
     },
-    plugins: [{
-      name: 'less-to-js',
-      setup(build) {
-        build.onLoad({ filter: /\.less$/ }, async (args) => {
-          const source = await fs.promises.readFile(args.path, 'utf8');
-          const { css } = await less.render(source, {
-            filename: args.path
+    plugins: [
+      {
+        name: 'less-to-js',
+        setup(build) {
+          build.onLoad({ filter: /\.less$/ }, async (args) => {
+            const source = await fs.promises.readFile(args.path, 'utf8');
+            const { css } = await less.render(source, {
+              filename: args.path
+            });
+            const contents = `
+                          if (typeof window !== 'undefined') {
+                              const style = document.createElement('style');
+                              style.textContent = ${JSON.stringify(css)};
+                              document.head.appendChild(style);
+                          }
+                      `;
+            return { contents, loader: 'js' };
           });
-          const contents = `
-                        if (typeof window !== 'undefined') {
-                            const style = document.createElement('style');
-                            style.textContent = ${JSON.stringify(css)};
-                            document.head.appendChild(style);
-                        }
-                    `;
-          return { contents, loader: 'js' };
-        });
-      }
-    }]
+        }
+      },
+      externalGlobalPlugin({
+        'react': 'window.React',
+        'react-dom': 'window.ReactDOM',
+        'antd': 'window.antd',
+        'axios': 'window.axios',
+      })
+    ]
   });
 
+  fs.writeFileSync('meta.website.json', JSON.stringify(clientResult.metafile))
   const clientBundle = clientResult.outputFiles[0].text;
   return `
 globalThis.websiteBundle = function() {
-  const exports = {};
-  const module = { exports };
-  ${clientBundle}
   return \`
     (function() {
       const exports = {};
