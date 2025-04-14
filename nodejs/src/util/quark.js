@@ -151,7 +151,7 @@ export async function getFilesByShareUrl(shareInfo) {
     const videos = [];
     const subtitles = [];
     const listFile = async function (shareId, folderId, page) {
-        const prePage = 200;
+        const prePage = 100;
         page = page || 1;
         const listData = await api(`share/sharepage/detail?${pr}&pwd_id=${shareId}&stoken=${encodeURIComponent(shareTokenCache[shareId].stoken)}&pdir_fid=${folderId}&force=0&_page=${page}&_size=${prePage}&_sort=file_type:asc,file_name:asc`, {}, {}, 'get');
         if (!listData.data) return [];
