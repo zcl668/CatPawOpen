@@ -14,7 +14,8 @@ import {
   Col,
   Switch,
   Alert,
-  Table
+  Table,
+  Upload
 } from 'antd';
 import axios from 'axios'
 import copy from 'copy-to-clipboard';
@@ -857,10 +858,39 @@ function Pans() {
 }
 
 function App() {
+  const props = {
+    accept: ".json",
+    showUploadList: false,
+    beforeUpload(file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const json = JSON.parse(e.target.result);
+          console.log("Parsed JSON data:", json);
+          await http.put('/backup', json);
+          message.success(`${file.name}导入成功`);
+        } catch (err) {
+          message.error(`${file.name}导入失败: ${err.message}`);
+          console.error('Error parsing JSON:', err);
+        }
+      };
+      reader.readAsText(file);
+      return false;
+    }
+  };
+
   return (
     <div className={'container'}>
       <Card style={{ minHeight: 600, maxHeight: '100vh', width: 600 }}>
-        <Tabs type="card">
+        <Tabs
+          type="card"
+          tabBarExtraContent={<div style={{display: 'flex', alignItems: 'center'}}>
+            <Upload {...props}>
+              <Button type={"link"}>导入</Button>
+            </Upload>
+            <a href={'/website/backup'} target={"_blank"}>导出</a>
+          </div>}
+        >
           <TabPane tab="登录信息" key="account">
             <Tabs>
               <TabPane tab="夸克" key="quark">
