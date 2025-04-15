@@ -325,7 +325,7 @@ export async function getDownload(shareId, stoken, fileId, fileToken, clean) {
                 device_gpu: 'Adreno (TM) 550',
                 activity_rect: '{}',
                 channel: conf.channel,
-                method: "download",
+                method: "streaming",
                 group_by: "source",
                 fid: saveFileIdCaches[fileId],
                 resolution: "low,normal,high,super,2k,4k",
@@ -343,7 +343,9 @@ export async function getDownload(shareId, stoken, fileId, fileToken, clean) {
         }
         let req = await axios.request(config);
         if (req.status === 200) {
-            return req.data.data
+            const videoInfo = req.data.data.video_info.filter((t) => t.accessable)[0]
+            videoInfo.download_url = videoInfo.url
+            return videoInfo
         }
     } else {
         let url = `file/download?${pr}`
@@ -439,10 +441,15 @@ export async function play(inReq, outResp) {
         const p= ['超清','蓝光','高清','标清','普画','极速'];
         const arr =['4k','2k','super','high','low','normal'];
         const proxyUrl = inReq.server.address().url + inReq.server.prefix + '/proxy/uc';
-        urls.push('代理');
-        urls.push(`${proxyUrl}/src/down/${ids[0]}/${encodeURIComponent(ids[1])}*${ids[2]}*${ids[3]}/.bin`);
-        urls.push('原画');
-        urls.push(`${proxyUrl}/src/redirect/${ids[0]}/${encodeURIComponent(ids[1])}*${ids[2]}*${ids[3]}/.bin`);
+        const localCfg = await localDb.getObjectDefault(`/uc`, {});
+        const token = localCfg[tokenDbKey]
+        const proxyVideo = ['代理', `${proxyUrl}/src/down/${ids[0]}/${encodeURIComponent(ids[1])}*${ids[2]}*${ids[3]}/.bin`]
+        const rawVideo = ['原画', `${proxyUrl}/src/redirect/${ids[0]}/${encodeURIComponent(ids[1])}*${ids[2]}*${ids[3]}/.bin`]
+        if (token) {
+            urls.push(...rawVideo, ...proxyVideo)
+        } else {
+            urls.push(...proxyVideo, ...rawVideo)
+        }
         const result = {
             parse: 0,
             url: urls,
@@ -453,6 +460,9 @@ export async function play(inReq, outResp) {
                 baseHeader,
             ),
         };
+        if (token) {
+            result.header = undefined
+        }
         if (ids[3]) {
             result.extra = {
                 subt: `${proxyUrl}/src/subt/${ids[0]}/${encodeURIComponent(ids[1])}*${ids[4]}*${ids[5]}/.bin`,
