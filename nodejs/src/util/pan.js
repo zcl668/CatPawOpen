@@ -91,6 +91,15 @@ export async function detail(shareUrls) {
             }
         }
     }
+    // 避免同名线路
+    const fromsVisitedMap = {}
+    froms.forEach((item, index) => {
+        if (!fromsVisitedMap[item]) {
+            fromsVisitedMap[item] = 1
+        } else {
+            froms[index] = `${item}-${++fromsVisitedMap[item]}`
+        }
+    })
 
     return {
         froms: froms.join('$$$'),
