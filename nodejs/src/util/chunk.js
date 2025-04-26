@@ -39,6 +39,27 @@ let currentUrlKey = '';
 const cacheRoot = (process.env['NODE_PATH'] || '.') + '/vod_cache';
 const maxCache = 1024 * 1024 * 100;
 
+async function deleteFolder(filePath) {
+    try {
+        if (fs.existsSync(filePath)) {
+            const files = await fs.promises.readdir(filePath);
+            await Promise.all(files.map(async (file) => {
+                const nextFilePath = `${filePath}/${file}`;
+                const stats = await fs.promises.stat(nextFilePath);
+                if (stats.isDirectory()) {
+                    await deleteFolder(nextFilePath);
+                } else {
+                    await fs.promises.unlink(nextFilePath);
+                }
+            }));
+            await fs.promises.rmdir(filePath);
+        }
+    } catch (error) {
+        console.error('Error deleting folder:', error);
+    }
+}
+deleteFolder(cacheRoot)
+
 function delAllCache(keepKey) {
     try {
         fs.readdir(cacheRoot, (_, files) => {
