@@ -36,16 +36,37 @@ async function category(e, t) {
     pagecount: 1,
     limit: 1,
     total: 1,
-    list: [{
-      vod_id: String(Math.random()),
-      vod_name: "扫码配置",
-      vod_pic: proxyUrl + '/' + base64Encode(`${e.server.address().url}/website`)
-    }]
+    list: [
+      {
+        vod_id: String(Math.random()),
+        vod_name: "扫码配置",
+        vod_pic: proxyUrl + '/' + base64Encode(`${e.server.address().url}/website`)
+      },
+      {
+        vod_id: "openInternalWebsite",
+        vod_name: "点击配置",
+        vod_pic: proxyUrl + '/' + base64Encode(`${e.server.address().url}/website`)
+      }
+    ]
   }
 }
 
 // 详情方法
-async function detail(e, t) {
+async function detail(req, t) {
+  if (req.body.id === 'openInternalWebsite') {
+    await req.server.messageToDart({
+      action: 'openInternalWebview',
+      opt: {
+        url: `${req.server.address().url}/website`,
+      },
+    });
+    return {
+      list: [{
+        vod_name: '',
+        vod_content: ''
+      }]
+    }
+  }
   return {
     list: [{
       vod_name: '',
