@@ -1,3 +1,5 @@
+import {detail as _detail, play} from "../../util/pan.js";
+
 async function init(_inReq, _outResp) {
     return {};
 }
@@ -17,21 +19,15 @@ async function detail(inReq, _outResp) {
             vod_name: id,
             vod_pic: 'https://pic.rmb.bdstatic.com/bjh/1d0b02d0f57f0a42201f92caba5107ed.jpeg',
         };
-        vod.vod_play_from = '推送';
-        vod.vod_play_url = '测试$' + id;
+        const vodFromUrl = await _detail(id);
+        if (vodFromUrl) {
+            vod.vod_play_from = vodFromUrl.froms;
+            vod.vod_play_url = vodFromUrl.urls;
+        }
         videos.push(vod);
     }
     return {
         list: videos,
-    };
-}
-
-async function play(inReq, _outResp) {
-    // const flag = inReq.body.flag;
-    const id = inReq.body.id;
-    return {
-        parse: 0,
-        url: id,
     };
 }
 
