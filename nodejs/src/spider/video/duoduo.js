@@ -7,6 +7,7 @@ async function request(reqUrl) {
     const resp = await req.get(reqUrl, {
         headers: {
             'User-Agent': ua,
+            'Accept': '*/*'
         },
     });
     return resp.data;
