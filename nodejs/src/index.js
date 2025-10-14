@@ -42,6 +42,7 @@ export async function start(config) {
             const resp = await axios.post(`http://127.0.0.1:${port}/msg`, data);
             return resp.data;
         } catch (error) {
+            console.error(error);
             return null;
         }
     };
@@ -60,6 +61,39 @@ export async function start(config) {
     server.config = config;
     // 推荐使用NODE_PATH做db存储的更目录，这个目录在应用中清除缓存时会被清空
     server.db = new JsonDB(new Config((process.env['NODE_PATH'] || '.') + `/${DB_NAME}.db.json`, true, true, '/', true));
+    let oldPush = server.db.push.bind(server.db);
+    server.db.push = async (...args) => {
+        let rs = await oldPush(...args);
+        // 异步存储配置
+        server.db.getData("/")
+          .then(allData => {
+              server.messageToDart({
+                  action: 'saveProfile',
+                  opt: allData,
+              });
+          })
+        return rs
+    }
+    let oldDelete = server.db.delete.bind(server.db);
+    server.db.delete = async (...args) => {
+        let rs = await oldDelete(...args);
+        // 异步存储配置
+        server.db.getData("/")
+          .then(allData => {
+              server.messageToDart({
+                  action: 'saveProfile',
+                  opt: allData,
+              });
+          })
+        return rs
+    }
+    // 异步恢复配置
+    server.messageToDart({
+        action: 'queryProfile'
+    })
+      .then(allData => {
+          oldPush('/', allData)
+      });
     server.register(router);
     server.register(website, { prefix: '/website' });
     globalThis.Pans = await getPansCache(server)
