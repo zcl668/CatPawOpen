@@ -3,7 +3,11 @@ import CryptoJS from "crypto-js";
 
 class YunDrive {
     constructor() {
-        this.regex = /https:\/\/yun.139.com\/shareweb\/#\/w\/i\/([^&]+)/;
+        this.regexs = [
+            /https:\/\/yun.139.com\/shareweb\/#\/w\/i\/([^&]+)/,
+            /https:\/\/caiyun.139.com\/m\/i\?([^&]+)/,
+            /https:\/\/caiyun.139.com\/w\/i\/([^&]+)/,
+        ];
         this.x = CryptoJS.enc.Utf8.parse("PVGDwmcvfs1uV3d1");
         this.baseUrl = 'https://share-kd-njs.yun.139.com/yun-share/richlifeApp/devapp/IOutLink/';
         this.baseHeader = {
@@ -39,10 +43,12 @@ class YunDrive {
     }
 
     async getShareID(url) {
-        const matches = this.regex.exec(url) || /https:\/\/caiyun.139.com\/m\/i\?([^&]+)/.exec(url);
-        if (matches && matches[1]) {
-            this.linkID = matches[1];
-        }
+        this.regexs.forEach(regex => {
+            const matches = regex.exec(url);
+            if (matches && matches[1]) {
+                this.linkID = matches[1];
+            }
+        })
     }
 
     async getShareInfo(pCaID) {
