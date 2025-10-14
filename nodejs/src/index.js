@@ -59,7 +59,7 @@ export async function start(config) {
     server.stop = false;
     server.config = config;
     // 推荐使用NODE_PATH做db存储的更目录，这个目录在应用中清除缓存时会被清空
-    server.db = new JsonDB(new Config((process.env['NODE_PATH'] || '.') + '/db.json', true, true, '/', true));
+    server.db = new JsonDB(new Config((process.env['NODE_PATH'] || '.') + `/${DB_NAME}.db.json`, true, true, '/', true));
     server.register(router);
     server.register(website, { prefix: '/website' });
     globalThis.Pans = await getPansCache(server)

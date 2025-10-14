@@ -20,6 +20,8 @@ globalThis.catDartServerPort = () => {
     return 0;
 };
 
+globalThis.DB_NAME = process.env.DB || 'default'
+
 eval(await getWebsiteBundle());
 
 import { start } from './index.js';

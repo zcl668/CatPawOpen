@@ -18,6 +18,9 @@ let result = await esbuild.build({
     target: 'node18',
     sourcemap: isDev ? 'inline' : false,
     plugins: isDev ? [genMd5()] : [obfuscator(), addWebsite(), genMd5()],
+    define: {
+        DB_NAME: JSON.stringify(process.env.DB || 'default'),
+    },
 });
 
 fs.writeFileSync('meta.server.json', JSON.stringify(result.metafile))
