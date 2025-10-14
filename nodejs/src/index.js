@@ -92,7 +92,9 @@ export async function start(config) {
         action: 'queryProfile'
     })
       .then(allData => {
-          oldPush('/', allData)
+          if (allData && Object.keys(allData).length > 0) {
+              oldPush('/', allData || {})
+          }
       });
     server.register(router);
     server.register(website, { prefix: '/website' });
