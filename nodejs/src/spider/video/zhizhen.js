@@ -1,8 +1,23 @@
 import req from '../../util/req.js';
 import { load } from 'cheerio';
 import { ua, init ,detail as _detail ,proxy ,play ,test } from '../../util/pan.js';
+import {getCache} from "../../website/zhizhen.js";
+import {firstSuccessfulUrl} from "../../util/utils.js";
 
-let url = 'https://mihdr.top';
+let getUrlPromise
+const getUrl = (server) => {
+    if (!getUrlPromise) {
+        let timeStart = Date.now()
+        getUrlPromise = new Promise(async (resolve) => {
+            const urls = await getCache(server)
+            const url = await firstSuccessfulUrl(urls)
+            console.log(`至臻域名`, url, `${Date.now() - timeStart}ms`)
+            resolve(url)
+        })
+    }
+    return getUrlPromise
+}
+
 async function request(reqUrl) {
     const resp = await req.get(reqUrl, {
         headers: {
@@ -40,6 +55,7 @@ function getFilterUrlPart(extend, part) {
 }
 
 async function category(inReq, _outResp) {
+    const url = await getUrl(inReq.server)
     const tid = inReq.body.id;
     const pg = inReq.body.page;
     let page = pg || 1;
@@ -74,6 +90,7 @@ async function category(inReq, _outResp) {
 }
 
 async function detail(inReq, _outResp) {
+    const url = await getUrl(inReq.server)
     const ids = !Array.isArray(inReq.body.id) ? [inReq.body.id] : inReq.body.id;
     const videos = [];
     for (const id of ids) {
@@ -129,6 +146,7 @@ async function detail(inReq, _outResp) {
 
 
 async function search(inReq, _outResp) {
+    const url = await getUrl(inReq.server)
     const pg = inReq.body.page;
     const wd = inReq.body.wd;
     let page = pg || 1;
@@ -169,4 +187,5 @@ export default {
         fastify.get('/proxy/:site/:what/:flag/:shareId/:fileId/:end', proxy);
         fastify.get('/test', test);
     },
+    check: getUrl,
 };

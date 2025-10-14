@@ -5,10 +5,25 @@ import axios from "axios";
 import {PC_UA} from "../../util/misc.js";
 import {getCache} from "../../website/leijing.js";
 import {isTyLink} from "../../util/linkDetect.js";
+import {firstSuccessfulUrl} from "../../util/utils.js";
 
 const headers = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
   'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
+}
+
+let getUrlPromise
+const getUrl = (server) => {
+  if (!getUrlPromise) {
+    let timeStart = Date.now()
+    getUrlPromise = new Promise(async (resolve) => {
+      const urls = await getCache(server)
+      const url = await firstSuccessfulUrl(urls, headers)
+      console.log(`雷鲸域名`, url, `${Date.now() - timeStart}ms`)
+      resolve(url)
+    })
+  }
+  return getUrlPromise
 }
 
 async function getHtml(config) {
@@ -57,7 +72,7 @@ async function home(_inReq, _outResp) {
 }
 
 async function category(inReq, _outResp) {
-  const url = await getCache(inReq.server)
+  const url = await getUrl(inReq.server)
   const tid = inReq.body.id;
   const pg = inReq.body.page;
   let page = pg || 1;
@@ -86,7 +101,7 @@ async function category(inReq, _outResp) {
 }
 
 async function detail(inReq, _outResp) {
-  const url = await getCache(inReq.server)
+  const url = await getUrl(inReq.server)
   let html = await request(`${url}/${inReq.body.id}`)
   const $ = pq(html)
   let vod = {
@@ -123,7 +138,7 @@ async function detail(inReq, _outResp) {
 
 
 async function search(inReq, _outResp) {
-  const url = await getCache(inReq.server)
+  const url = await getUrl(inReq.server)
   const pg = inReq.body.page || 1;
   const wd = inReq.body.wd;
   let html = (await getHtml(`${url}/search?keyword=${encodeURIComponent(decodeURIComponent(wd))}&page=${pg}`)).data
@@ -178,4 +193,5 @@ export default {
     fastify.get('/icon', icon);
     fastify.get('/proxy/:site/:what/:flag/:shareId/:fileId/:end', proxy);
   },
+  check: getUrl
 };

@@ -1,26 +1,20 @@
-const defaultUrls = [
-  "http://123.666291.xyz",
-  "https://mogg.5568.eu.org",
-  "https://mo.91muou.icu",
-  "https://mo.666291.xyz",
-  "https://mo.muouso.fun"
-]
+const defaultUrls = ['https://mihdr.top', 'http://xiaomi666.fun', 'http://www.miqk.cc', 'https://xiaomiai.site']
 
 export const getCache = async (server) => {
-  const obj = await server.db.getObjectDefault(`/muou`, {})
+  const obj = await server.db.getObjectDefault(`/zhizhen`, {})
   // 优先级：缓存->配置文件->兜底域名
-  return obj?.urls || server.config.muou?.urls || defaultUrls
+  return obj?.urls || server.config.zhizhen?.urls || defaultUrls
 }
 
 export const setCache = async (server, value) => {
-  await server.db.push(`/muou/urls`, value);
+  await server.db.push(`/zhizhen/urls`, value);
 }
 
 export const removeCache = async (server) => {
-  await server.db.delete(`/muou/urls`);
+  await server.db.delete(`/zhizhen/urls`);
 }
 
-export default async function muou(fastify) {
+export default async function zhizhen(fastify) {
   fastify.get('/urls', async (req, res) => {
     res.send({
       code: 0,

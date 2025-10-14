@@ -2,6 +2,21 @@ import req from '../../util/req.js';
 import { ua, init as _init ,detail as _detail ,proxy ,play } from '../../util/pan.js';
 import { load } from 'cheerio';
 import {getCache} from "../../website/wogg.js";
+import {firstSuccessfulUrl} from "../../util/utils.js";
+
+let getUrlPromise
+const getUrl = (server) => {
+    if (!getUrlPromise) {
+        let timeStart = Date.now()
+        getUrlPromise = new Promise(async (resolve) => {
+            const urls = await getCache(server)
+            const url = await firstSuccessfulUrl(urls)
+            console.log(`玩偶域名`, url, `${Date.now() - timeStart}ms`)
+            resolve(url)
+        })
+    }
+    return getUrlPromise
+}
 
 async function request(reqUrl) {
     const res = await req.get(reqUrl, {
@@ -18,7 +33,7 @@ async function init(inReq, _outResp) {
 }
 
 async function home(_inReq, _outResp) {
-    const url = await getCache(_inReq.server)
+    const url = await getUrl(_inReq.server)
     const html = await request(`${url}/index.php/vodshow/1-----------.html`);
     const $ = load(html);
     return {
@@ -51,7 +66,7 @@ function getHrefInfoIdx(data) {
 }
 
 async function category(inReq, _outResp) {
-    const url = await getCache(inReq.server)
+    const url = await getUrl(inReq.server)
     const tid = inReq.body.id;
     const pg = inReq.body.page;
     const extend = inReq.body.filters;
@@ -147,7 +162,7 @@ async function category(inReq, _outResp) {
 }
 
 async function detail(inReq, _outResp) {
-    const url = await getCache(inReq.server)
+    const url = await getUrl(inReq.server)
     const ids = !Array.isArray(inReq.body.id) ? [inReq.body.id] : inReq.body.id;
     const videos = [];
     for (const id of ids) {
@@ -200,7 +215,7 @@ function findElementIndex(arr, elem) {
 }
 
 async function search(inReq, _outResp) {
-    const url = await getCache(inReq.server)
+    const url = await getUrl(inReq.server)
     const pg = inReq.body.page;
     const wd = inReq.body.wd;
     let page = pg || 1;
@@ -310,4 +325,5 @@ export default {
         fastify.get('/proxy/:site/:what/:flag/:shareId/:fileId/:end', proxy);
         fastify.get('/test', test);
     },
+    check: getUrl
 };

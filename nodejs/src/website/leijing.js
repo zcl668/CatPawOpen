@@ -1,23 +1,36 @@
+const defaultUrls = ['https://leijing.xyz']
+
 export const getCache = async (server) => {
   const obj = await server.db.getObjectDefault(`/leijing`, {})
   // 优先级：缓存->配置文件->兜底域名
-  return obj?.url || server.config.leijing.url || 'https://leijing.xyz'
+  return obj?.urls || server.config.leijing?.urls || defaultUrls
 }
 
 export const setCache = async (server, value) => {
-  await server.db.push(`/leijing/url`, value);
+  await server.db.push(`/leijing/urls`, value);
+}
+
+export const removeCache = async (server) => {
+  await server.db.delete(`/leijing/urls`);
 }
 
 export default async function leijing(fastify) {
-  fastify.get('/url', async (req, res) => {
+  fastify.get('/urls', async (req, res) => {
     res.send({
       code: 0,
       data: await getCache(req.server)
     })
   })
 
-  fastify.put('/url', async (req, res) => {
-    await setCache(req.server, req.body.url)
+  fastify.put('/urls', async (req, res) => {
+    await setCache(req.server, req.body)
+    res.send({
+      code: 0,
+    })
+  })
+
+  fastify.delete('/urls', async (req, res) => {
+    await removeCache(req.server)
     res.send({
       code: 0,
     })

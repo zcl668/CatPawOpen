@@ -25,6 +25,7 @@ export default async function router(fastify) {
     spiders.forEach((spider) => {
         const path = spiderPrefix + '/' + spider.meta.key + '/' + spider.meta.type;
         fastify.register(spider.api, { prefix: path });
+        spider.check?.(fastify)
         console.log('Register spider: ' + path);
     });
     /**

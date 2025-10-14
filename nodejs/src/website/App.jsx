@@ -161,32 +161,111 @@ function AliQrcodeCard() {
 }
 
 function SiteDomainSetting({api, name}) {
-  const [url, setUrl] = React.useState('');
+  const [form] = Form.useForm();
+  const formItemLayout = {
+    labelCol: { span: 6 },
+    wrapperCol: { span: 18 },
+  };
+  const formItemLayoutWithOutLabel = {
+    wrapperCol: { span: 18, offset: 6 },
+  };
 
-  const saveUrl = async () => {
+  const init = async () => {
+    const data = await http.get(api)
+    form.setFieldsValue({urls: data})
+  }
+
+  const submit = async () => {
+    const data = await form.validateFields()
     try {
-      await http.put(api, {
-        url
-      })
-      message.success('设置成功')
+      await http.put(api, data.urls)
+      message.success('入库成功')
+    } catch (e) {
+      console.error(e)
+      message.error(`入库失败：${e?.message}`)
+    }
+  }
+
+  const reset = async () => {
+    try {
+      await http.delete(api)
+      init()
+      message.success('重置成功')
     } catch (e) {
       console.error(e);
-      message.error(`设置失败：${e?.message}`)
+      message.error(`重置失败：${e?.message}`)
     }
   }
 
   useEffect(() => {
-    http.get(api)
-      .then(data => {
-        setUrl(data);
-      })
+    init()
   }, [])
 
   return (
-    <Space.Compact style={{ width: '100%' }}>
-      <Input placeholder={`请输入${name}域名`} value={url} onChange={(e) => setUrl(e.target.value)} />
-      <Button type="primary" onClick={saveUrl}>保存</Button>
-    </Space.Compact>
+    <Form form={form} {...formItemLayout}>
+      <Alert message="启动时将自动选择速度最快的域名" type="info" style={{ marginBottom: 12 }}/>
+      <Form.List
+        name="urls"
+        rules={[
+          {
+            required: true,
+            message: '请添加域名'
+          },
+        ]}
+      >
+        {(fields, { add, remove }, { errors }) => (
+          <>
+            {fields.map((field, index) => (
+              <Form.Item
+                label={index === 0 ? '域名列表' : ''}
+                required={false}
+                key={field.key}
+                {...(index === 0 ? formItemLayout : formItemLayoutWithOutLabel)}
+                style={{marginBottom: 12}}
+              >
+                <Form.Item
+                  {...field}
+                  validateTrigger={['onChange', 'onBlur']}
+                  rules={[
+                    {
+                      required: true,
+                      whitespace: true,
+                      message: `请输入${name}域名`,
+                    },
+                  ]}
+                  noStyle
+                >
+                  <Input placeholder={`请输入${name}域名`} style={{ width: '60%' }}/>
+                </Form.Item>
+                {fields.length > 1 ? (
+                  <MinusCircleOutlined
+                    className="dynamic-delete-button"
+                    onClick={() => remove(field.name)}
+                  />
+                ) : null}
+              </Form.Item>
+            ))}
+            <Form.Item label={''} {...formItemLayoutWithOutLabel}>
+              <Button
+                type="dashed"
+                onClick={() => add()}
+                style={{ width: '60%' }}
+                icon={<PlusOutlined />}
+              >
+                添加域名
+              </Button>
+              <Form.ErrorList errors={errors} />
+            </Form.Item>
+          </>
+        )}
+      </Form.List>
+      <Form.Item label={null}>
+        <Button type="primary" onClick={submit}>
+          保存
+        </Button>
+        <Button danger style={{marginLeft: 16}} onClick={reset}>重置</Button>
+      </Form.Item>
+    </Form>
   )
 }
 
@@ -937,13 +1016,16 @@ function App() {
                 <Sites/>
               </TabPane>
               <TabPane tab="木偶域名" key="muou">
-                <SiteDomainSetting api={'/muou/url'} name="木偶"/>
+                <SiteDomainSetting api={'/muou/urls'} name="木偶"/>
               </TabPane>
               <TabPane tab="玩偶域名" key="wogg">
-                <SiteDomainSetting api={'/wogg/url'} name="玩偶"/>
+                <SiteDomainSetting api={'/wogg/urls'} name="玩偶"/>
               </TabPane>
               <TabPane tab="雷鲸域名" key="leijing">
-                <SiteDomainSetting api={'/leijing/url'} name="雷鲸"/>
+                <SiteDomainSetting api={'/leijing/urls'} name="雷鲸"/>
+              </TabPane>
+              <TabPane tab="至臻域名" key="zhizhen">
+                <SiteDomainSetting api={'/zhizhen/urls'} name="至臻"/>
               </TabPane>
               <TabPane tab="TG频道" key="tgchannel">
                 <TGChannel/>

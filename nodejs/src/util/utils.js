@@ -1,4 +1,5 @@
 import {conversion, formatPlayUrl} from "./misc.js";
+import axios from "axios";
 
 function getVodNumber(name) {
   let t = /(E|EP)0?([1-9]\d*).*/.exec(name);
@@ -33,4 +34,20 @@ export function videosHandle(from, videos) {
     })
     .join('#')
   return result
+}
+
+export async function firstSuccessfulUrl(urls, headers) {
+  return new Promise((resolve) => {
+    urls.forEach(url => {
+      axios.head(url,{ headers })
+        .then(response => {
+          if (response.status === 200) {
+            // 请求成功，直接返回这个url
+            resolve(url);
+          }
+        })
+        .catch(() => {
+        });
+    });
+  });
 }
