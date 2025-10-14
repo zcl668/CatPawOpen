@@ -1,11 +1,15 @@
 import req from '../../util/req.js';
 import {init, proxy, play, detail as _detail} from '../../util/pan.js';
 import {jsoup} from "../../util/htmlParser.js";
-import {Cloud} from "../../util/cloud.js";
 import axios from "axios";
 import {PC_UA} from "../../util/misc.js";
 import {getCache} from "../../website/leijing.js";
 import {isTyLink} from "../../util/linkDetect.js";
+
+const headers = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
+  'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
+}
 
 async function getHtml(config) {
   try {
@@ -13,6 +17,7 @@ async function getHtml(config) {
       url: config.url,
       method: config.method || 'GET',
       headers: config.headers || {
+        ...headers,
         'User-Agent': PC_UA
       },
       data: config.data || '',
@@ -25,9 +30,7 @@ async function getHtml(config) {
 
 async function request(reqUrl) {
   const resp = await req.get(reqUrl, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
-    },
+    headers,
   });
   return resp.data;
 }
@@ -67,7 +70,7 @@ async function category(inReq, _outResp) {
     videos.push({
       "vod_name": a.children[0].data,
       "vod_id": a.attribs.href,
-      "vod_pic": `${url}/favicon.ico`
+      "vod_pic": inReq.server.address().url + inReq.server.prefix + '/icon'
     })
   })
   const pageInfo = $('.topicPage .pg')[0]
@@ -145,6 +148,19 @@ async function search(inReq, _outResp) {
   };
 }
 
+async function icon(inReq, reply) {
+  try {
+    const base64Image = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABABAMAAABYR2ztAAAALVBMVEVHcEw9r+cipOQqp+VItOhCsedives7ruccouNVueovquW74/eV1PLW7vpzxu6kNLMaAAAACHRSTlMAK9qm1B0KZtVpWLIAAAJCSURBVEjHxZUxj9MwFMdzQzsD1cFMGegKJ3QnPgITEirz3cAxw0l8gJbBl4E5TqssDCShyh45Ye+16X5y3JmkqT8Dz0lo4zSpN/iryZD30/s/1/Z7mvbv1B0+rGh4WY9/eHLWr+js03s5fnXT15G9+yG7f/64Gu/cDFBNo/O3FaB3EAfiRcXgJWrQs51Jt4catUtxctEMjB+UwLtBMzB6VTp8Ri16fnnUYefxcdAGjL4UJaBWFUU8ageeHq8RoR+iys7rdmAs9qPzph34rgK+inWeCEB3C4mv+1cFcJaFbGDzV2bIgEcIYfBAzKOmi/TotwToDsZTijGGzD/pcu46ke/YFcCD7AsmPAx9G4T+hDJK7irAjJYAMzyKo3QqWAlYW9yKLZ5ExoRmbGWCm1m1mPkbwuMpmQPAQsYwCYhfLdKblxkywyFTP8J0tVhLy3SzIM8AC8yB2J7dSwCyVnhlLVNYcRhSdgjoUFUCjw0ZNr/Agm9kCy/M/0lq5BYbDIVKRaJvMc8o56EAFkFo4mhuyhlibNHEIgAsYEvMZJukcgZGQrBgdr4t2Iu32dqWLZIpZACLW2xlq8n9lkM9EgAWWFjMYJuC6G6bRmnNglCwMGBjOXaIFaaTtJZBSBTpQh3JjBquVMNtkp9Bbpen1Uls+cihIuI2nepjF6e4FxeKm3XsbuYdpKu63VpP1R+UHUbZo5RdrrVJ/e2T6k6r7NXaVWOK8X6kdFXzQj1xxMyS47WZpZ56mnY9PN2PzdPDufk/9QdaMC7B2rkgYwAAAABJRU5ErkJggg=="
+    const imgBuffer = Buffer.from(base64Image, 'base64');
+
+    reply.header('Content-Type', "image/png");
+    reply.header('Content-Length', imgBuffer.length);
+
+    return reply.send(imgBuffer);
+  } catch (err) {
+    reply.code(500).send({ error: 'Failed to load image' });
+  }
+}
 
 export default {
   meta: {
@@ -159,6 +175,7 @@ export default {
     fastify.post('/detail', detail);
     fastify.post('/play', play);
     fastify.post('/search', search);
+    fastify.get('/icon', icon);
     fastify.get('/proxy/:site/:what/:flag/:shareId/:fileId/:end', proxy);
   },
 };
