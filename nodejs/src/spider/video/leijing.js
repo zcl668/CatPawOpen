@@ -106,7 +106,7 @@ async function detail(inReq, _outResp) {
   const $ = pq(html)
   let vod = {
     "vod_name": $('.title')[0].children[0].data.trim(),
-    "vod_id": `/${inReq.body.id}`,
+    "vod_id": `${inReq.body.id}`,
     "vod_content": $('div.topicContent p:nth-child(1)').text().replace(/\s+/g, ''),
   }
   let content_html = $('.topicContent').html()
