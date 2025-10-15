@@ -80,6 +80,16 @@ class Pan123 {
         };
 
         let auth = (await axios.request(config)).data
+        if (!auth?.data?.token) {
+            messageToDart({
+                action: 'toast',
+                opt: {
+                    message: '123盘登录失败，请前往【配置】站源进行配置',
+                    duration: 5
+                }
+            })
+            return
+        }
         ENV.set('pan_auth',auth.data.token)
     }
 

@@ -430,6 +430,13 @@ class CloudDrive {
     } finally {
       if (this.index >= 2) {
         this.index = 0; // 仅在达到最大重试次数后重置
+        messageToDart({
+          action: 'toast',
+          opt: {
+            message: '天翼账号登录失败，请前往【配置】站源进行配置',
+            duration: 5
+          }
+        })
       }
     }
   }

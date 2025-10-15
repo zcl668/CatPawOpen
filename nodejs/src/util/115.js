@@ -241,6 +241,15 @@ export async function play(inReq) {
     },
     data,
   );
+  if (response?.error?.includes?.("登录")) {
+    messageToDart({
+        action: 'toast',
+        opt: {
+            message: '115盘登录失败，请前往【配置】站源进行配置',
+            duration: 5
+        }
+    })
+  }
   const resData = JSON.parse(decrypt(response.data));
   return {
     parse: 0,

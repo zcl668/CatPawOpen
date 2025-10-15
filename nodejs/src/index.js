@@ -29,12 +29,9 @@ export async function start(config) {
         logger: !!(process.env.NODE_ENV !== 'development'),
         maxParamLength: 10240,
     });
-    server.messageToDart = async (data, inReq) => {
+    globalThis.messageToDart = server.messageToDart = async (data) => {
         try {
-            if (!data.prefix) {
-                data.prefix = inReq ? inReq.server.prefix : '';
-            }
-            console.log(data);
+            console.log('messageToDart', data);
             const port = catDartServerPort();
             if (port == 0) {
                 return null;

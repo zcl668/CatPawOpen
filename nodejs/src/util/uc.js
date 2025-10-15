@@ -93,6 +93,15 @@ async function api(url, data, headers, method, retry) {
                   })
                   .catch((err) => {
                       console.error(err);
+                      if (err?.response?.status === 401) {
+                          messageToDart({
+                              action: 'toast',
+                              opt: {
+                                  message: 'UC token已过期，请前往【配置】站源进行配置',
+                                  duration: 5
+                              }
+                          })
+                      }
                       return err.response || { status: 500, data: {} };
                   })
             : await req
@@ -101,6 +110,15 @@ async function api(url, data, headers, method, retry) {
                   })
                   .catch((err) => {
                       console.error(err);
+                      if (err?.response?.status === 401) {
+                          messageToDart({
+                              action: 'toast',
+                              opt: {
+                                  message: 'UC token已过期，请前往【配置】站源进行配置',
+                                  duration: 5
+                              }
+                          })
+                      }
                       return err.response || { status: 500, data: {} };
                   });
     const leftRetry = retry || 3;
