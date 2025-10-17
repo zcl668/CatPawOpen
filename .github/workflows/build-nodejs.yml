@@ -22,6 +22,6 @@ jobs:
     - name: Archive dist
       uses: actions/upload-artifact@v4
       with:
-        name: anru668
+        name: dist
         path: |
-          nodejs/tvbox
+          nodejs/dist
